@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Administración</title>
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/login.css">
+    <link rel="stylesheet" href="styles/ai.css">
+    <link rel="stylesheet" href="styles/cards.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="stylesheet" href="styles/inventory.css">
+    <link rel="stylesheet" href="styles/modal.css">
+    <link rel="stylesheet" href="styles/responsive.css">
+    <link rel="stylesheet" href="styles/navbar.css">
+</head>
+
+<body>
+    <!-- Login Screen -->
+    <div class="login-container" id="loginScreen">
+        <div class="login-card">
+            <h1>Login</h1>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Usuario:</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña:</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="login-btn">Iniciar Sesión</button>
+            </form>
+            <p style="margin-top: 20px; color: #666; font-size: 0.9em;">
+                Usuario: admin | Contraseña: 123456
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div class="dashboard" id="dashboard">
+        <div class="mobile-indicator">
+            📱 MODO SOLO LECTURA - Para modificaciones use una computadora
+        </div>
+
+         <!-- Main Navbar -->
+        <div id="navbar-container"></div>
+
+        <div class="main-content">
+            <div class="main-panel">
+                <div class="encabezado">
+                    <h1>Bienvenido!</h1>
+                    <h2>Resumen del dia </h2>
+                    <p id="fechaActual"></p>
+                </div>
+                <br>
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card1">
+                        <h3>Ingresos</h3>
+                        <div class="value">$12,450</div>
+                        <div class="change">+8.2% vs ayer</div>
+                    </div>
+                    <div class="stat-card2">
+                        <h3>Egresos</h3>
+                        <div class="value">$12,450</div>
+                        <div class="change">+8.2% vs ayer</div>
+                    </div> 
+                    <div class="stat-card1">
+                        <h3>Ticket Promedio</h3>
+                        <div class="value">$87.68</div>
+                        <div class="change">-2.1% vs ayer</div>
+                    </div>               
+                    <div class="stat-card3">
+                        <h3>Clientes Atendidos</h3>
+                        <div class="value">142</div>
+                        <div class="change">+12 vs ayer</div>
+                    </div>
+                    
+                    <div class="stat-card3">
+                        <h3>Empleados Activos</h3>
+                        <div class="value">8/10</div>
+                        <div class="change">2 ausentes</div>
+                    </div>
+                </div>
+
+                <!-- Inventory Section -->
+                <div class="inventory-section">
+                    <div class="section-header">
+                        <h2>📦 Inventario - Estado Actual</h2>
+                        <p>Productos con alertas de stock</p>
+                    </div>
+                    <div class="inventory-list" id="inventoryList">
+                        <div class="inventory-item">
+                            <div class="item-info">
+                                <h4>Carne Molida</h4>
+                                <p>Proveedor: Carnes Premium</p>
+                            </div>
+                            <div class="stock-level">
+                                <div class="quantity">15.5</div>
+                                <div class="unit">kg</div>
+                                <div class="stock-status stock-low">Stock Bajo</div>
+                            </div>
+                        </div>
+                        <div class="inventory-item">
+                            <div class="item-info">
+                                <h4>Pollo Entero</h4>
+                                <p>Proveedor: Avícola San Juan</p>
+                            </div>
+                            <div class="stock-level">
+                                <div class="quantity">45</div>
+                                <div class="unit">piezas</div>
+                                <div class="stock-status stock-ok">Stock OK</div>
+                            </div>
+                        </div>
+                        <div class="inventory-item">
+                            <div class="item-info">
+                                <h4>Cerveza Corona</h4>
+                                <p>Proveedor: Distribuidora ABC</p>
+                            </div>
+                            <div class="stock-level">
+                                <div class="quantity">8</div>
+                                <div class="unit">cajas</div>
+                                <div class="stock-status stock-low">Stock Bajo</div>
+                            </div>
+                        </div>
+                        <div class="inventory-item">
+                            <div class="item-info">
+                                <h4>Tomate</h4>
+                                <p>Proveedor: Verduras Frescas</p>
+                            </div>
+                            <div class="stock-level">
+                                <div class="quantity">28.2</div>
+                                <div class="unit">kg</div>
+                                <div class="stock-status stock-ok">Stock OK</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Assistant Panel -->
+
+<button id="toggleChatBtn" class="chat-fab">💬</button>
+
+
+<div class="ai-assistant" id="aiAssistant">
+    <div class="ai-header">
+        <button id="closeChatBtn" class="close-chat">&larr;</button>
+        <h3>🤖 Asistente IA</h3>
+        <div class="ai-status" id="aiStatus">Listo para ayudar</div>
+    </div>
+
+    <div class="ai-chat" id="aiChat">
+        <div class="ai-message assistant">
+            ¡Hola! Soy tu asistente de virtual. Puedo ayudarte con:
+            <br><br>
+            📊 Reportes y análisis<br>
+            📦 Consultas de inventario<br>
+            💰 Estado financiero<br>
+            👥 Información de personal<br>
+            ✏️ Modificaciones (solo desde escritorio)
+            <br><br>
+            ¿En qué puedo ayudarte hoy?
+        </div>
+    </div>
+
+    <div class="ai-controls">
+        <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">
+            🎤 Mantén presionado para hablar
+        </button>
+        <input type="text" class="text-input" id="textInput" placeholder="Escribe tu pregunta aquí...">
+        <button class="send-btn" onclick="sendMessage()">Enviar</button>
+    </div>
+</div>
+
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <h3>⚠️ Confirmar Modificación</h3>
+            <p id="confirmMessage"></p>
+            <div class="modal-buttons">
+                <button class="modal-btn confirm-btn" onclick="confirmAction()">Sí, Confirmar</button>
+                <button class="modal-btn cancel-btn" onclick="cancelAction()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/scripts.js"></script>
+
+
+</body>
+
+</html>
