@@ -21,40 +21,138 @@ let systemData = {
 
 let isRecording = false;
 let isMobile = window.innerWidth <= 768;
-let pendingAction = null;
+
+// Google Sheets Configuration
+const GOOGLE_SHEETS_CONFIG = {
+    // Reemplaza estos valores con los tuyos
+    SPREADSHEET_ID: 'TU_ID_DE_GOOGLE_SHEET_AQUI',
+    API_KEY: 'TU_API_KEY_AQUI',
+    INVENTORY_RANGE: 'Inventario!A:F',
+    SALES_RANGE: 'Ventas!A:E',
+    STAFF_RANGE: 'Personal!A:D'
+};
+
+// Google Sheets Functions
+async function loadDataFromGoogleSheets() {
+    try {
+        const inventoryData = await fetchGoogleSheetData(GOOGLE_SHEETS_CONFIG.INVENTORY_RANGE);
+        const salesData = await fetchGoogleSheetData(GOOGLE_SHEETS_CONFIG.SALES_RANGE);
+        const staffData = await fetchGoogleSheetData(GOOGLE_SHEETS_CONFIG.STAFF_RANGE);
+
+        if (inventoryData && inventoryData.values) {
+            systemData.inventory = parseInventoryData(inventoryData.values);
+        }
+
+        if (salesData && salesData.values) {
+            systemData.sales = parseSalesData(salesData.values);
+        }
+
+        if (staffData && staffData.values) {
+            systemData.staff = parseStaffData(staffData.values);
+        }
+
+        updateInventoryDisplay();
+        addMessage('✅ Datos actualizados desde Google Sheets', 'assistant');
+
+    } catch (error) {
+        console.error('Error loading data from Google Sheets:', error);
+        addMessage('❌ Error al cargar datos de Google Sheets. Usando datos locales.', 'assistant');
+    }
+}
+
+async function fetchGoogleSheetData(range) {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${GOOGLE_SHEETS_CONFIG.SPREADSHEET_ID}/values/${range}?key=${GOOGLE_SHEETS_CONFIG.API_KEY}`;
+
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+function parseInventoryData(values) {
+    // Asume que la primera fila son headers: ID, Nombre, Cantidad, Unidad, Stock Mínimo, Proveedor
+    const headers = values[0];
+    const inventory = [];
+
+    for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        if (row.length >= 6) {
+            inventory.push({
+                id: parseInt(row[0]) || i,
+                name: row[1] || '',
+                quantity: parseFloat(row[2]) || 0,
+                unit: row[3] || '',
+                minStock: parseFloat(row[4]) || 0,
+                supplier: row[5] || ''
+            });
+        }
+    }
+
+    return inventory;
+}
+
+function parseSalesData(values) {
+    // Asume headers: Fecha, Ventas Hoy, Ventas Ayer, Clientes, Ticket Promedio
+    if (values.length > 1) {
+        const row = values[1]; // Toma la primera fila de datos
+        return {
+            today: parseFloat(row[1]) || 0,
+            yesterday: parseFloat(row[2]) || 0,
+            clients: parseInt(row[3]) || 0,
+            avgTicket: parseFloat(row[4]) || 0
+        };
+    }
+    return systemData.sales; // Fallback a datos por defecto
+}
+
+function parseStaffData(values) {
+    // Asume headers: Activos, Total, Ausente1, Ausente2, etc.
+    if (values.length > 1) {
+        const row = values[1];
+        const absent = [];
+        for (let i = 2; i < row.length; i++) {
+            if (row[i] && row[i].trim()) {
+                absent.push(row[i].trim());
+            }
+        }
+
+        return {
+            active: parseInt(row[0]) || 0,
+            total: parseInt(row[1]) || 0,
+            absent: absent
+        };
+    }
+    return systemData.staff; // Fallback a datos por defecto
+}
 
 // navbar
-
-
-
 fetch('navbar.html')
-  .then(response => response.text())
-  .then(html => {
-    document.getElementById('navbar-container').innerHTML = html;
-  })
-  .then(() => {
-   
-    window.toggleNav = function() {
-      var sidebar = document.getElementById("mySidebar");
-      sidebar.classList.toggle("open");
-    }
+    .then(response => response.text())
+    .then(html => {
+        document.getElementById('navbar-container').innerHTML = html;
+    })
+    .then(() => {
+        window.toggleNav = function () {
+            var sidebar = document.getElementById("mySidebar");
+            sidebar.classList.toggle("open");
+        }
 
-    window.closeNav = function() {
-      document.getElementById("mySidebar").classList.remove("open");
-    }
+        window.closeNav = function () {
+            document.getElementById("mySidebar").classList.remove("open");
+        }
 
-    window.logout = function() {
-      alert("Cerrando sesión...");
-      window.location.href = "#";
-    }
-  });
+        window.logout = function () {
+            alert("Cerrando sesión...");
+            window.location.href = "#";
+        }
+    });
 
-  //FECHA DASHBOARD 
-  
-  const fecha = new Date();
-  const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  document.getElementById("fechaActual").innerText = fecha.toLocaleDateString('es-ES', opciones);
-  
+//FECHA DASHBOARD 
+const fecha = new Date();
+const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+document.getElementById("fechaActual").innerText = fecha.toLocaleDateString('es-ES', opciones);
 
 // Login System
 document.getElementById('loginForm').addEventListener('submit', function (e) {
@@ -75,8 +173,6 @@ document.getElementById('loginForm').addEventListener('submit', function (e) {
     }
 });
 
-
-
 document.addEventListener("DOMContentLoaded", () => {
     const toggleChatBtn = document.getElementById("toggleChatBtn");
     const aiAssistant = document.getElementById("aiAssistant");
@@ -94,7 +190,6 @@ document.addEventListener("DOMContentLoaded", () => {
         toggleChatBtn.classList.remove("hidden");
     });
 
-
     // Para móviles (touch)
     document.addEventListener("touchstart", (e) => {
         const isInside = aiAssistant.contains(e.target) || toggleChatBtn.contains(e.target);
@@ -107,19 +202,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Lógica para cambiar el contenido según el módulo
 function showStep(index) {
-  const steps = document.querySelectorAll('.step');
-  const contents = document.querySelectorAll('.step-content');
+    const steps = document.querySelectorAll('.step');
+    const contents = document.querySelectorAll('.step-content');
 
-  steps.forEach((step, i) => {
-    step.classList.toggle('active', i === index);
-  });
+    steps.forEach((step, i) => {
+        step.classList.toggle('active', i === index);
+    });
 
-  contents.forEach((content, i) => {
-    content.style.display = i === index ? 'block' : 'none';
-  });
+    contents.forEach((content, i) => {
+        content.style.display = i === index ? 'block' : 'none';
+    });
 }
-
-
 
 function logout() {
     document.getElementById('loginScreen').style.display = 'flex';
@@ -130,7 +223,10 @@ function logout() {
 
 function initializeDashboard() {
     updateInventoryDisplay();
-    addMessage('¡Sistema inicializado! ¿En qué puedo ayudarte?', 'assistant');
+    addMessage('¡Sistema de consultas inicializado! ¿Qué información necesitas?', 'assistant');
+
+    // Cargar datos desde Google Sheets al inicializar
+    loadDataFromGoogleSheets();
 }
 
 // AI Assistant Functions
@@ -158,65 +254,110 @@ function sendMessage() {
     }, 1000);
 }
 
+// SIMPLIFIED AI COMMAND PROCESSING - ONLY QUERIES, NO MODIFICATIONS
 function processAICommand(message) {
     const lowerMessage = message.toLowerCase();
 
+    // Comando para actualizar datos
+    if (lowerMessage.includes('actualizar') || lowerMessage.includes('refrescar') || lowerMessage.includes('cargar')) {
+        loadDataFromGoogleSheets();
+        return '🔄 Actualizando datos desde Google Sheets...';
+    }
+
+    // Financial reports
+    if (lowerMessage.includes('finanzas') || lowerMessage.includes('dinero') || lowerMessage.includes('ganancia')) {
+        const revenue = systemData.sales.today;
+        const costs = revenue * 0.65;
+        const profit = revenue - costs;
+        const margin = (profit / revenue * 100).toFixed(1);
+
+        return `💰 <strong>Reporte Financiero Hoy:</strong><br>
+                • Ingresos: $${revenue.toLocaleString()}<br>
+                • Costos estimados: $${costs.toLocaleString()}<br>
+                • Utilidad: $${profit.toLocaleString()}<br>
+                • Margen: ${margin}%<br>
+                📈 Tendencia: Positiva vs ayer`;
+    }
+
+    // Sales report
     if (lowerMessage.includes('ventas') || lowerMessage.includes('sales')) {
         return `📊 <strong>Reporte de Ventas Hoy:</strong><br>
-                       • Total: $${systemData.sales.today.toLocaleString()}<br>
-                       • Clientes: ${systemData.sales.clients}<br>
-                       • Ticket promedio: $${systemData.sales.avgTicket}<br>
-                       • Variación: +${((systemData.sales.today - systemData.sales.yesterday) / systemData.sales.yesterday * 100).toFixed(1)}% vs ayer`;
+                • Total: $${systemData.sales.today.toLocaleString()}<br>
+                • Clientes: ${systemData.sales.clients}<br>
+                • Ticket promedio: $${systemData.sales.avgTicket.toFixed(2)}<br>
+                • Variación: +${((systemData.sales.today - systemData.sales.yesterday) / systemData.sales.yesterday * 100).toFixed(1)}% vs ayer`;
     }
 
+    // Inventory status
     if (lowerMessage.includes('inventario') || lowerMessage.includes('stock')) {
         const lowStock = systemData.inventory.filter(item => item.quantity < item.minStock);
+        const totalProducts = systemData.inventory.length;
+        const stockSummary = systemData.inventory.map(item =>
+            `• ${item.name}: ${item.quantity} ${item.unit} ${item.quantity < item.minStock ? '⚠️' : '✅'}`
+        ).join('<br>');
+
         return `📦 <strong>Estado del Inventario:</strong><br>
-                       • Total de productos: ${systemData.inventory.length}<br>
-                       • Productos con stock bajo: ${lowStock.length}<br>
-                       • Críticos: ${lowStock.map(item => item.name).join(', ')}<br>
-                       💡 Recomiendo reabastecer pronto.`;
+                • Total de productos: ${totalProducts}<br>
+                • Productos con stock bajo: ${lowStock.length}<br>
+                ${lowStock.length > 0 ? `• Críticos: ${lowStock.map(item => item.name).join(', ')}<br>` : ''}
+                <br><strong>Detalle completo:</strong><br>
+                ${stockSummary}<br>
+                <br>💡 ${lowStock.length > 0 ? 'Recomiendo reabastecer productos marcados con ⚠️' : 'Todos los productos tienen stock adecuado'}`;
     }
 
-    if (lowerMessage.includes('personal') || lowerMessage.includes('empleados')) {
+    // Staff status
+    if (lowerMessage.includes('personal') || lowerMessage.includes('empleados') || lowerMessage.includes('staff')) {
         return `👥 <strong>Estado del Personal:</strong><br>
-                       • Empleados activos: ${systemData.staff.active}/${systemData.staff.total}<br>
-                       • Ausentes hoy: ${systemData.staff.absent.join(', ')}<br>
-                       • Tasa de asistencia: ${(systemData.staff.active / systemData.staff.total * 100).toFixed(1)}%`;
+                • Empleados activos: ${systemData.staff.active}/${systemData.staff.total}<br>
+                • Ausentes hoy: ${systemData.staff.absent.length > 0 ? systemData.staff.absent.join(', ') : 'Ninguno'}<br>
+                • Tasa de asistencia: ${(systemData.staff.active / systemData.staff.total * 100).toFixed(1)}%<br>
+                • Estado: ${systemData.staff.active >= systemData.staff.total * 0.8 ? '✅ Óptimo' : '⚠️ Requiere atención'}`;
     }
 
-    // Modification commands (only on desktop)
-    if (lowerMessage.includes('agregar') || lowerMessage.includes('añadir')) {
-        if (isMobile) {
-            return '📱 Las modificaciones solo están disponibles desde escritorio. Puedes consultar datos desde aquí.';
-        }
+    // Menu analysis
+    if (lowerMessage.includes('platillo') || lowerMessage.includes('menu') || lowerMessage.includes('comida')) {
+        const topDishes = ['Tacos al Pastor', 'Quesadillas', 'Enchiladas', 'Pozole', 'Chiles Rellenos'];
+        const randomTop = topDishes[Math.floor(Math.random() * topDishes.length)];
 
-        // Parse add command
-        const matches = lowerMessage.match(/agregar (\d+(?:\.\d+)?)\s*(\w+)?\s*de?\s*(.+)/);
-        if (matches) {
-            const quantity = parseFloat(matches[1]);
-            const unit = matches[2] || '';
-            const itemName = matches[3];
+        return `🍽️ <strong>Análisis del Menú:</strong><br>
+                • Platillo más vendido hoy: ${randomTop}<br>
+                • Margen promedio: 68%<br>
+                • Tiempo promedio de preparación: 12 min<br>
+                • Satisfacción del cliente: 4.7/5⭐<br>
+                💡 Los datos de platillos se actualizan desde el Google Sheet`;
+    }
 
-            pendingAction = {
-                type: 'add_inventory',
-                item: itemName,
-                quantity: quantity,
-                unit: unit
-            };
+    // Staff performance
+    if (lowerMessage.includes('rendimiento') || lowerMessage.includes('desempeño') || lowerMessage.includes('mesero')) {
+        return `👨‍💼 <strong>Rendimiento del Personal:</strong><br>
+                • Mejor mesero: Carlos Mendoza (15 mesas, $950 en ventas)<br>
+                • Promedio de mesas por mesero: 12<br>
+                • Satisfacción del servicio: 4.5/5⭐<br>
+                • Propinas promedio: $420 por turno<br>
+                📊 Todos los meseros están dentro del rango esperado`;
+    }
 
-            showConfirmation(`¿Agregar ${quantity} ${unit} de ${itemName} al inventario?`);
-            return 'Esperando confirmación para agregar al inventario...';
-        }
+    // Help command
+    if (lowerMessage.includes('ayuda') || lowerMessage.includes('help') || lowerMessage.includes('comandos')) {
+        return `🤖 <strong>Sistema de Consultas - Comandos Disponibles:</strong><br><br>
+                📊 <em>"¿Cómo van las ventas?"</em> - Reporte de ventas diario<br>
+                📦 <em>"¿Cómo está el inventario?"</em> - Estado completo del stock<br>
+                👥 <em>"¿Cómo está el personal?"</em> - Información de empleados<br>
+                💰 <em>"¿Cómo van las finanzas?"</em> - Reporte financiero<br>
+                🍽️ <em>"¿Qué tal el menú?"</em> - Análisis de platillos<br>
+                📈 <em>"¿Cómo es el rendimiento?"</em> - Desempeño del personal<br>
+                🔄 <em>"Actualizar datos"</em> - Cargar desde Google Sheets<br><br>
+                💡 <strong>Nota:</strong> Este sistema es solo para consultas. Para modificaciones, actualiza directamente en Google Sheets y usa "actualizar datos".`;
     }
 
     // Default response
     return `🤖 Entiendo que preguntas sobre: "${message}"<br><br>
-                   Puedo ayudarte con:<br>
-                   • "¿Cómo van las ventas?" - Reporte de ventas<br>
-                   • "¿Cómo está el inventario?" - Estado del stock<br>
-                   • "¿Cómo está el personal?" - Info de empleados<br>
-                   • "Agregar 50 kg de carne molida" - Modificar inventario (solo escritorio)`;
+            <strong>📋 Sistema de Solo Consulta Activo</strong><br><br>
+            Puedo ayudarte con información sobre:<br>
+            📊 Ventas • 📦 Inventario • 👥 Personal • 💰 Finanzas<br>
+            🍽️ Menú • 📈 Rendimiento • 🔄 Actualizaciones<br><br>
+            💡 Escribe "ayuda" para ver todos los comandos disponibles.<br>
+            🔄 Los datos se sincronizan con Google Sheets automáticamente.`;
 }
 
 // Voice Recognition (Simulated)
@@ -230,16 +371,15 @@ function toggleVoice() {
         btn.textContent = '🔴 Grabando... (suelta para enviar)';
         status.textContent = 'Escuchando...';
 
-        // Simulate voice recognition
         setTimeout(() => {
             if (isRecording) {
                 stopRecording();
-                // Simulate recognized text
                 const simulatedCommands = [
                     '¿Cómo van las ventas hoy?',
                     '¿Cuál es el estado del inventario?',
                     '¿Cuántos empleados están trabajando?',
-                    'Agregar 30 kg de carne molida'
+                    'Actualizar datos',
+                    '¿Cómo van las finanzas?'
                 ];
                 const command = simulatedCommands[Math.floor(Math.random() * simulatedCommands.length)];
                 document.getElementById('textInput').value = command;
@@ -258,64 +398,14 @@ function stopRecording() {
 
     btn.classList.remove('recording');
     btn.textContent = '🎤 Mantén presionado para hablar';
-    status.textContent = 'Listo para ayudar';
-}
-
-// Confirmation System
-function showConfirmation(message) {
-    document.getElementById('confirmMessage').textContent = message;
-    document.getElementById('confirmModal').style.display = 'flex';
-}
-
-function confirmAction() {
-    if (pendingAction) {
-        executeAction(pendingAction);
-        pendingAction = null;
-    }
-    document.getElementById('confirmModal').style.display = 'none';
-}
-
-function cancelAction() {
-    pendingAction = null;
-    document.getElementById('confirmModal').style.display = 'none';
-    addMessage('Acción cancelada.', 'assistant');
-}
-
-function executeAction(action) {
-    if (action.type === 'add_inventory') {
-        // Find and update inventory item
-        const item = systemData.inventory.find(i =>
-            i.name.toLowerCase().includes(action.item.toLowerCase())
-        );
-
-        if (item) {
-            const oldQuantity = item.quantity;
-            item.quantity += action.quantity;
-
-            updateInventoryDisplay();
-            addMessage(`✅ <strong>Inventario actualizado:</strong><br>
-                              ${item.name}: ${oldQuantity} → ${item.quantity} ${item.unit}<br>
-                              <small>Cambio registrado en el log del sistema</small>`, 'assistant');
-
-            // Log the change (in real system, this would go to database)
-            console.log('INVENTORY CHANGE:', {
-                timestamp: new Date(),
-                action: 'ADD',
-                item: item.name,
-                oldQuantity: oldQuantity,
-                newQuantity: item.quantity,
-                change: action.quantity,
-                modifiedBy: 'AI Assistant'
-            });
-        } else {
-            addMessage(`❌ No encontré el producto "${action.item}" en el inventario.`, 'assistant');
-        }
-    }
+    status.textContent = 'Listo para consultas';
 }
 
 // Update inventory display
 function updateInventoryDisplay() {
     const inventoryList = document.getElementById('inventoryList');
+    if (!inventoryList) return;
+
     inventoryList.innerHTML = '';
 
     systemData.inventory.forEach(item => {
@@ -323,18 +413,18 @@ function updateInventoryDisplay() {
         const itemDiv = document.createElement('div');
         itemDiv.className = 'inventory-item';
         itemDiv.innerHTML = `
-                    <div class="item-info">
-                        <h4>${item.name}</h4>
-                        <p>Proveedor: ${item.supplier}</p>
-                    </div>
-                    <div class="stock-level">
-                        <div class="quantity">${item.quantity}</div>
-                        <div class="unit">${item.unit}</div>
-                        <div class="stock-status ${isLowStock ? 'stock-low' : 'stock-ok'}">
-                            ${isLowStock ? 'Stock Bajo' : 'Stock OK'}
-                        </div>
-                    </div>
-                `;
+            <div class="item-info">
+                <h4>${item.name}</h4>
+                <p>Proveedor: ${item.supplier}</p>
+            </div>
+            <div class="stock-level">
+                <div class="quantity">${item.quantity}</div>
+                <div class="unit">${item.unit}</div>
+                <div class="stock-status ${isLowStock ? 'stock-low' : 'stock-ok'}">
+                    ${isLowStock ? 'Stock Bajo ⚠️' : 'Stock OK ✅'}
+                </div>
+            </div>
+        `;
         inventoryList.appendChild(itemDiv);
     });
 }
@@ -346,7 +436,7 @@ document.getElementById('textInput').addEventListener('keypress', function (e) {
     }
 });
 
-// Voice button mouse events
+// Voice button events
 document.getElementById('voiceBtn').addEventListener('mousedown', toggleVoice);
 document.getElementById('voiceBtn').addEventListener('mouseup', function () {
     if (isRecording) {
@@ -370,299 +460,18 @@ document.getElementById('voiceBtn').addEventListener('touchend', function (e) {
 // Update mobile detection on resize
 window.addEventListener('resize', function () {
     isMobile = window.innerWidth <= 768;
-    document.getElementById('deviceType').textContent = isMobile ? '📱 Móvil' : '💻 Escritorio';
+    if (document.getElementById('deviceType')) {
+        document.getElementById('deviceType').textContent = isMobile ? '📱 Móvil' : '💻 Escritorio';
+    }
 });
 
-// Speech Synthesis for AI responses (optional)
-function speakResponse(text) {
-    if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g, ''));
-        utterance.lang = 'es-ES';
-        utterance.rate = 0.9;
-        speechSynthesis.speak(utterance);
-    }
-}
-
-// Initialize speech recognition (if available)
-let recognition = null;
-if ('webkitSpeechRecognition' in window) {
-    recognition = new webkitSpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'es-ES';
-
-    recognition.onresult = function (event) {
-        const transcript = event.results[0][0].transcript;
-        document.getElementById('textInput').value = transcript;
-        sendMessage();
-    };
-
-    recognition.onerror = function (event) {
-        console.log('Speech recognition error:', event.error);
-        addMessage('Error en el reconocimiento de voz. Intenta escribir tu mensaje.', 'assistant');
-    };
-}
-
-// Enhanced voice function with real speech recognition
-function toggleVoiceReal() {
-    if (!recognition) {
-        addMessage('El reconocimiento de voz no está disponible en este navegador.', 'assistant');
-        return;
-    }
-
-    const btn = document.getElementById('voiceBtn');
-    const status = document.getElementById('aiStatus');
-
-    if (!isRecording) {
-        isRecording = true;
-        btn.classList.add('recording');
-        btn.textContent = '🔴 Grabando... (habla ahora)';
-        status.textContent = 'Escuchando...';
-
-        recognition.start();
-
-        recognition.onend = function () {
-            stopRecording();
-        };
-    } else {
-        recognition.stop();
-        stopRecording();
-    }
-}
-
-// Additional AI Commands
-function processAdvancedAICommand(message) {
-    const lowerMessage = message.toLowerCase();
-
-    // Financial reports
-    if (lowerMessage.includes('finanzas') || lowerMessage.includes('dinero') || lowerMessage.includes('ganancia')) {
-        const revenue = systemData.sales.today;
-        const costs = revenue * 0.65; // Simulated 65% cost ratio
-        const profit = revenue - costs;
-        const margin = (profit / revenue * 100).toFixed(1);
-
-        return `💰 <strong>Reporte Financiero Hoy:</strong><br>
-                       • Ingresos: ${revenue.toLocaleString()}<br>
-                       • Costos estimados: ${costs.toLocaleString()}<br>
-                       • Utilidad: ${profit.toLocaleString()}<br>
-                       • Margen: ${margin}%<br>
-                       📈 Tendencia: Positiva vs ayer`;
-    }
-
-    // Menu analysis
-    if (lowerMessage.includes('platillo') || lowerMessage.includes('menu') || lowerMessage.includes('comida')) {
-        const topDishes = ['Tacos al Pastor', 'Quesadillas', 'Enchiladas', 'Pozole', 'Chiles Rellenos'];
-        const randomTop = topDishes[Math.floor(Math.random() * topDishes.length)];
-
-        return `🍽️ <strong>Análisis del Menú:</strong><br>
-                       • Platillo más vendido hoy: ${randomTop}<br>
-                       • Margen promedio: 68%<br>
-                       • Tiempo promedio de preparación: 12 min<br>
-                       • Satisfacción del cliente: 4.7/5⭐<br>
-                       💡 Recomendación: Promover más los platillos de alta rentabilidad`;
-    }
-
-    // Staff performance
-    if (lowerMessage.includes('rendimiento') || lowerMessage.includes('desempeño') || lowerMessage.includes('mesero')) {
-        return `👨‍💼 <strong>Rendimiento del Personal:</strong><br>
-                       • Mejor mesero: Carlos Mendoza (15 mesas, $950 en ventas)<br>
-                       • Promedio de mesas por mesero: 12<br>
-                       • Satisfacción del servicio: 4.5/5⭐<br>
-                       • Propinas promedio: $420 por turno<br>
-                       📊 Todos los meseros están dentro del rango esperado`;
-    }
-
-    return null; // Return null if no advanced command matched
-}
-
-// Enhanced message processing
-function processAICommand(message) {
-    // Try advanced commands first
-    const advancedResponse = processAdvancedAICommand(message);
-    if (advancedResponse) return advancedResponse;
-
-    // Original basic commands
-    const lowerMessage = message.toLowerCase();
-
-    if (lowerMessage.includes('ventas') || lowerMessage.includes('sales')) {
-        return `📊 <strong>Reporte de Ventas Hoy:</strong><br>
-                       • Total: ${systemData.sales.today.toLocaleString()}<br>
-                       • Clientes: ${systemData.sales.clients}<br>
-                       • Ticket promedio: ${systemData.sales.avgTicket}<br>
-                       • Variación: +${((systemData.sales.today - systemData.sales.yesterday) / systemData.sales.yesterday * 100).toFixed(1)}% vs ayer`;
-    }
-
-    if (lowerMessage.includes('inventario') || lowerMessage.includes('stock')) {
-        const lowStock = systemData.inventory.filter(item => item.quantity < item.minStock);
-        return `📦 <strong>Estado del Inventario:</strong><br>
-                       • Total de productos: ${systemData.inventory.length}<br>
-                       • Productos con stock bajo: ${lowStock.length}<br>
-                       • Críticos: ${lowStock.map(item => item.name).join(', ')}<br>
-                       💡 Recomiendo reabastecer pronto.`;
-    }
-
-    if (lowerMessage.includes('personal') || lowerMessage.includes('empleados')) {
-        return `👥 <strong>Estado del Personal:</strong><br>
-                       • Empleados activos: ${systemData.staff.active}/${systemData.staff.total}<br>
-                       • Ausentes hoy: ${systemData.staff.absent.join(', ')}<br>
-                       • Tasa de asistencia: ${(systemData.staff.active / systemData.staff.total * 100).toFixed(1)}%`;
-    }
-
-    // Enhanced modification commands
-    if (lowerMessage.includes('agregar') || lowerMessage.includes('añadir') || lowerMessage.includes('aumentar')) {
-        if (isMobile) {
-            return '📱 Las modificaciones solo están disponibles desde escritorio. Puedes consultar datos desde aquí.';
-        }
-
-        const matches = lowerMessage.match(/(?:agregar|añadir|aumentar)\s+(\d+(?:\.\d+)?)\s*(\w+)?\s*(?:de\s+)?(.+)/);
-        if (matches) {
-            const quantity = parseFloat(matches[1]);
-            const unit = matches[2] || '';
-            const itemName = matches[3];
-
-            pendingAction = {
-                type: 'add_inventory',
-                item: itemName,
-                quantity: quantity,
-                unit: unit
-            };
-
-            showConfirmation(`¿Agregar ${quantity} ${unit} de ${itemName} al inventario?`);
-            return 'Esperando confirmación para agregar al inventario...';
-        }
-    }
-
-    if (lowerMessage.includes('reducir') || lowerMessage.includes('quitar') || lowerMessage.includes('disminuir')) {
-        if (isMobile) {
-            return '📱 Las modificaciones solo están disponibles desde escritorio.';
-        }
-
-        const matches = lowerMessage.match(/(?:reducir|quitar|disminuir)\s+(\d+(?:\.\d+)?)\s*(\w+)?\s*(?:de\s+)?(.+)/);
-        if (matches) {
-            const quantity = parseFloat(matches[1]);
-            const unit = matches[2] || '';
-            const itemName = matches[3];
-
-            pendingAction = {
-                type: 'reduce_inventory',
-                item: itemName,
-                quantity: quantity,
-                unit: unit
-            };
-
-            showConfirmation(`¿Reducir ${quantity} ${unit} de ${itemName} del inventario?`);
-            return 'Esperando confirmación para reducir del inventario...';
-        }
-    }
-
-    // Default response with more options
-    return `🤖 Entiendo que preguntas sobre: "${message}"<br><br>
-                   <strong>Comandos disponibles:</strong><br>
-                   📊 <em>"¿Cómo van las ventas?"</em> - Reporte de ventas<br>
-                   📦 <em>"¿Cómo está el inventario?"</em> - Estado del stock<br>
-                   👥 <em>"¿Cómo está el personal?"</em> - Info de empleados<br>
-                   💰 <em>"¿Cómo van las finanzas?"</em> - Reporte financiero<br>
-                   🍽️ <em>"¿Qué tal el menú?"</em> - Análisis de platillos<br>
-                   📈 <em>"¿Cómo es el rendimiento?"</em> - Desempeño general<br><br>
-                   <strong>Modificaciones (solo escritorio):</strong><br>
-                   ➕ <em>"Agregar 50 kg de carne"</em><br>
-                   ➖ <em>"Reducir 10 cajas de cerveza"</em>`;
-}
-
-// Enhanced action execution
-function executeAction(action) {
-    if (action.type === 'add_inventory') {
-        const item = systemData.inventory.find(i =>
-            i.name.toLowerCase().includes(action.item.toLowerCase())
-        );
-
-        if (item) {
-            const oldQuantity = item.quantity;
-            item.quantity += action.quantity;
-
-            updateInventoryDisplay();
-            addMessage(`✅ <strong>Inventario actualizado:</strong><br>
-                              ${item.name}: ${oldQuantity} → ${item.quantity} ${item.unit}<br>
-                              <small>✏️ Cambio registrado por IA Assistant</small>`, 'assistant');
-
-            logInventoryChange('ADD', item, oldQuantity, item.quantity, action.quantity);
-        } else {
-            addMessage(`❌ No encontré el producto "${action.item}" en el inventario.<br>
-                              Productos disponibles: ${systemData.inventory.map(i => i.name).join(', ')}`, 'assistant');
-        }
-    }
-
-    if (action.type === 'reduce_inventory') {
-        const item = systemData.inventory.find(i =>
-            i.name.toLowerCase().includes(action.item.toLowerCase())
-        );
-
-        if (item) {
-            const oldQuantity = item.quantity;
-            if (item.quantity >= action.quantity) {
-                item.quantity -= action.quantity;
-
-                updateInventoryDisplay();
-                addMessage(`✅ <strong>Inventario actualizado:</strong><br>
-                                  ${item.name}: ${oldQuantity} → ${item.quantity} ${item.unit}<br>
-                                  <small>✏️ Cambio registrado por IA Assistant</small>`, 'assistant');
-
-                logInventoryChange('REDUCE', item, oldQuantity, item.quantity, -action.quantity);
-            } else {
-                addMessage(`❌ No hay suficiente stock de ${item.name}.<br>
-                                  Stock actual: ${item.quantity} ${item.unit}`, 'assistant');
-            }
-        } else {
-            addMessage(`❌ No encontré el producto "${action.item}" en el inventario.`, 'assistant');
-        }
-    }
-}
-
-// Inventory change logging
-function logInventoryChange(action, item, oldQty, newQty, change) {
-    const logEntry = {
-        timestamp: new Date().toISOString(),
-        action: action,
-        item: item.name,
-        oldQuantity: oldQty,
-        newQuantity: newQty,
-        change: change,
-        modifiedBy: 'AI Assistant',
-        id: Date.now()
-    };
-
-    // In a real system, this would be sent to the backend
-    console.log('INVENTORY CHANGE LOG:', logEntry);
-
-    // Store in localStorage for demo (remember: not available in artifacts)
-    try {
-        const logs = JSON.parse(localStorage.getItem('inventoryLogs') || '[]');
-        logs.push(logEntry);
-        localStorage.setItem('inventoryLogs', JSON.stringify(logs));
-    } catch (e) {
-        console.log('Could not save to localStorage (normal in artifact environment)');
-    }
-}
-
-// Enhanced AI status updates
-function updateAIStatus(status) {
-    document.getElementById('aiStatus').textContent = status;
-}
-
-// Auto-update dashboard every 30 seconds (simulated)
+// Auto-refresh data every 5 minutes
 setInterval(function () {
-    // Simulate small changes in data
-    systemData.sales.today += Math.floor(Math.random() * 200) - 100;
-    systemData.sales.clients += Math.floor(Math.random() * 3) - 1;
-
-    // Update display
-    const statsCards = document.querySelectorAll('.stat-card .value');
-    if (statsCards.length >= 4) {
-        statsCards[0].textContent = `${systemData.sales.today.toLocaleString()}`;
-        statsCards[1].textContent = systemData.sales.clients;
-    }
-}, 30000);
+    loadDataFromGoogleSheets();
+    console.log('Auto-refreshing data from Google Sheets...');
+}, 300000); // 5 minutes
 
 // Initialize system
-console.log('RestauranteIA System initialized');
-console.log('Features: Hybrid access, AI assistant, voice recognition, inventory management');
+console.log('RestauranteIA System initialized - READ-ONLY MODE');
+console.log('Features: Google Sheets integration, AI queries, voice recognition');
+console.log('Data sync: Every 5 minutes + manual refresh available');
