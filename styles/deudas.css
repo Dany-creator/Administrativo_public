@@ -1,0 +1,153 @@
+body {
+  background-color: #121212;
+  color: #ffffff;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  margin-top: 80px;
+  flex-wrap: wrap;
+}
+
+.header h1 {
+  font-size: 1.5em;
+  margin: 0;
+  margin-left: 30px;
+}
+
+.btn-agregar {
+  padding: 10px;
+  background-color: #242222;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-top: 10px;
+  margin-right: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;  
+  height: 44px;
+}
+
+.btn-agregar:hover {
+  background-color: #2563eb;
+}
+
+.btn-agregar svg {
+  pointer-events: none;
+}
+
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  padding: 0 10px;
+}
+
+.stat-card3 {
+  background: #242222;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(71, 85, 105, 0.3);
+  border-left: 4px solid #242222;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.stat-card3:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+  border-left-color: #ffffff;
+}
+
+.stat-card3 h3 {
+  color: #ffffff;
+  font-size: 0.9em;
+  margin-bottom: 8px;
+}
+
+.stat-card3 .value {
+  font-size: 1.6em;
+  font-weight: bold;
+  color: #f1f5f9;
+  margin-bottom: 5px;
+}
+
+.deuda-info {
+  margin-top: 6px;
+}
+
+.deuda-info p {
+  margin: 2px 0;
+  font-size: 0.8em;
+  color: #e2e8f0;
+}
+
+.stat-card3 .delete-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  z-index: 1;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.stat-card3 .delete-btn:hover {
+  opacity: 1;
+}
+
+.stat-card3 .delete-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: #aaa;
+}
+
+.stat-card3 .delete-btn:hover svg {
+  fill: #f87171; 
+}
+
+
+
+@media (max-width: 480px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .header h1 {
+    font-size: 1.2em;
+  }
+
+  .btn-agregar {
+    width: 100%;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    padding: 0 5px;
+  }
+
+  .stat-card3 {
+    padding: 14px;
+  }
+}
+

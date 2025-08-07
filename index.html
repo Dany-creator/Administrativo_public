@@ -11,9 +11,404 @@
     <link rel="stylesheet" href="styles/cards.css">
     <link rel="stylesheet" href="styles/dashboard.css">
     <link rel="stylesheet" href="styles/inventory.css">
+    <link rel="stylesheet" href="styles/graficasdashboard.css">
     <link rel="stylesheet" href="styles/modal.css">
     <link rel="stylesheet" href="styles/responsive.css">
     <link rel="stylesheet" href="styles/navbar.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <style>
+        /* Dashboard Styles */
+
+        .welcome-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .welcome-section h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .date {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        /* Cards Grid - Arreglado para computadora */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .card-header:hover::after {
+            left: 100%;
+        }
+
+        .card-header h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0;
+            z-index: 1;
+            position: relative;
+        }
+
+        .card-header .toggle-icon {
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+            z-index: 1;
+            position: relative;
+        }
+
+        .card-header.active .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .card-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #fafafa;
+        }
+
+        .card-content.active {
+            padding: 25px;
+            max-height: 800px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group-card {
+            margin-bottom: 20px;
+        }
+
+        .form-group-card label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .form-group-card input,
+        .form-group-card select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+            box-sizing: border-box;
+        }
+
+        .form-group-card input:focus,
+        .form-group-card select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            margin-right: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            font-weight: 700;
+            color: #475569;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table tr:hover {
+            background: #f8fafc;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+            color: #475569;
+        }
+
+        /* Summary Cards */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .summary-card h3 {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .summary-card .value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .summary-card .change {
+            color: #28a745;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Layout principal */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        .main-panel {
+            min-width: 0;
+        }
+
+        /* Responsive - Mobile */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 15px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .card-header {
+                padding: 20px;
+            }
+
+            .card-content.active {
+                padding: 20px;
+            }
+
+            .btn-primary {
+                width: 100%;
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Encabezado principal */
+        .encabezado {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .encabezado h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .encabezado h2 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .encabezado p {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card1,
+        .stat-card2 {
+            background: rgb(53, 53, 53);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card1::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .stat-card2::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .stat-card1 h3,
+        .stat-card2 h3 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card1 .value,
+        .stat-card2 .value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .stat-card1 .change,
+        .stat-card2 .change {
+            color: #10b981;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body>
@@ -67,104 +462,280 @@
                         <div class="value">$12,450</div>
                         <div class="change">+8.2% vs ayer</div>
                     </div>
-                    <div class="stat-card1">
-                        <h3>Ticket Promedio</h3>
-                        <div class="value">$87.68</div>
-                        <div class="change">-2.1% vs ayer</div>
+                </div>
+
+                <!-- Cards Grid -->
+                <div class="cards-grid">
+                    <!-- Ingresos Card -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard('ingresos')">
+                            <h3>💰 Ingresos</h3>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                        <div class="card-content" id="ingresos-content">
+                            <form id="ingresosForm">
+                                <div class="form-row">
+                                    <div class="form-group-card">
+                                        <label>Fecha:</label>
+                                        <input type="date" id="ingresoFecha" required>
+                                    </div>
+                                    <div class="form-group-card">
+                                        <label>Banco:</label>
+                                        <select id="ingresoBanco" required>
+                                            <option value="">Seleccionar banco</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-card">
+                                        <label>Moneda:</label>
+                                        <select id="ingresoMoneda" required>
+                                            <option value="USD">USD</option>
+                                            <option value="EUR">EUR</option>
+                                            <option value="MXN">MXN</option>
+                                            <option value="COP">COP</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group-card">
+                                    <label>Monto:</label>
+                                    <input type="number" id="ingresoMonto" step="0.01" required>
+                                </div>
+                                <div class="form-group-card">
+                                    <label>Descripción:</label>
+                                    <input type="text" id="ingresoDescripcion" placeholder="Concepto del ingreso">
+                                </div>
+                                <button type="submit" class="btn-primary">Agregar Ingreso</button>
+                                <button type="button" class="btn-primary"
+                                    onclick="exportData('ingresos')">Exportar</button>
+                            </form>
+
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Monto</th>
+                                        <th>Banco</th>
+                                        <th>Moneda</th>
+                                        <th>Descripción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ingresosTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Egresos Card -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard('egresos')">
+                            <h3>📤 Egresos</h3>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                        <div class="card-content" id="egresos-content">
+                            <form id="egresosForm">
+                                <div class="form-row">
+                                    <div class="form-group-card">
+                                        <label>Fecha:</label>
+                                        <input type="date" id="egresoFecha" required>
+                                    </div>
+                                    <div class="form-group-card">
+                                        <label>Banco:</label>
+                                        <select id="egresoBanco" required>
+                                            <option value="">Seleccionar banco</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group-card">
+                                        <label>Tipo de Egreso:</label>
+                                        <select id="egresoTipo" required>
+                                            <option value="">Seleccionar tipo</option>
+                                            <option value="Socio M">Socio M</option>
+                                            <option value="Socio C">Socio C</option>
+                                            <option value="Nomina">Nómina</option>
+                                            <option value="Impuesto">Impuesto</option>
+                                            <option value="Gastos">Gastos</option>
+                                            <option value="Abono a Proveedores">Abono a Proveedores</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group-card">
+                                        <label>Monto:</label>
+                                        <input type="number" id="egresoMonto" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="form-group-card" id="proveedorGroup" style="display: none;">
+                                    <label>Proveedor:</label>
+                                    <select id="egresoProveedor">
+                                        <option value="">Seleccionar proveedor</option>
+                                    </select>
+                                </div>
+                                <div class="form-group-card">
+                                    <label>Descripción:</label>
+                                    <input type="text" id="egresoDescripcion" placeholder="Concepto del egreso">
+                                </div>
+                                <button type="submit" class="btn-primary">Agregar Egreso</button>
+                                <button type="button" class="btn-primary"
+                                    onclick="exportData('egresos')">Exportar</button>
+                            </form>
+
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Banco</th>
+                                        <th>Tipo</th>
+                                        <th>Monto</th>
+                                        <th>Descripción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="egresosTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Bancos Card -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard('bancos')">
+                            <h3>🏦 Bancos</h3>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                        <div class="card-content" id="bancos-content">
+                            <form id="bancosForm">
+                                <div class="form-row">
+                                    <div class="form-group-card">
+                                        <label>Nombre del Banco:</label>
+                                        <input type="text" id="bancoNombre" required>
+                                    </div>
+                                    <div class="form-group-card">
+                                        <label>Número de Cuenta:</label>
+                                        <input type="text" id="bancoCuenta" required>
+                                    </div>
+                                </div>
+                                <div class="form-group-card">
+                                    <label>Saldo Inicial:</label>
+                                    <input type="number" id="bancoSaldo" step="0.01" required>
+                                </div>
+                                <button type="submit" class="btn-primary">Agregar Banco</button>
+                                <button type="button" class="btn-primary"
+                                    onclick="exportData('bancos')">Exportar</button>
+                            </form>
+
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Banco</th>
+                                        <th>Cuenta</th>
+                                        <th>Saldo</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bancosTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Proveedores Card -->
+                    <div class="card">
+                        <div class="card-header" onclick="toggleCard('proveedores')">
+                            <h3>🏪 Proveedores</h3>
+                            <span class="toggle-icon">▼</span>
+                        </div>
+                        <div class="card-content" id="proveedores-content">
+                            <form id="proveedoresForm">
+                                <div class="form-row">
+                                    <div class="form-group-card">
+                                        <label>Nombre del Proveedor:</label>
+                                        <input type="text" id="proveedorNombre" required>
+                                    </div>
+                                    <div class="form-group-card">
+                                        <label>Contacto:</label>
+                                        <input type="text" id="proveedorContacto">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group-card">
+                                        <label>Teléfono:</label>
+                                        <input type="tel" id="proveedorTelefono">
+                                    </div>
+                                    <div class="form-group-card">
+                                        <label>Email:</label>
+                                        <input type="email" id="proveedorEmail">
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn-primary">Agregar Proveedor</button>
+                                <button type="button" class="btn-primary"
+                                    onclick="exportData('proveedores')">Exportar</button>
+                            </form>
+
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Contacto</th>
+                                        <th>Teléfono</th>
+                                        <th>Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="proveedoresTable"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Inventory Section -->
-                <div class="inventory-section">
-                    <div class="section-header">
-                        <h2>📦 Inventario - Estado Actual</h2>
-                        <p>Productos con alertas de stock</p>
+                <!-- Gráficas del Dashboard -->
+                <section class="dashboard-graphs">
+
+
+                    <div class="graph-box dark">
+                        <h3>Ingresos y Egresos</h3>
+                        <canvas id="comboTimeChart"></canvas>
                     </div>
-                    <div class="inventory-list" id="inventoryList">
-                        <div class="inventory-item">
-                            <div class="item-info">
-                                <h4>Carne Molida</h4>
-                                <p>Proveedor: Carnes Premium</p>
-                            </div>
-                            <div class="stock-level">
-                                <div class="quantity">15.5</div>
-                                <div class="unit">kg</div>
-                                <div class="stock-status stock-low">Stock Bajo</div>
-                            </div>
-                        </div>
-                        <div class="inventory-item">
-                            <div class="item-info">
-                                <h4>Pollo Entero</h4>
-                                <p>Proveedor: Avícola San Juan</p>
-                            </div>
-                            <div class="stock-level">
-                                <div class="quantity">45</div>
-                                <div class="unit">piezas</div>
-                                <div class="stock-status stock-ok">Stock OK</div>
-                            </div>
-                        </div>
-                        <div class="inventory-item">
-                            <div class="item-info">
-                                <h4>Cerveza Corona</h4>
-                                <p>Proveedor: Distribuidora ABC</p>
-                            </div>
-                            <div class="stock-level">
-                                <div class="quantity">8</div>
-                                <div class="unit">cajas</div>
-                                <div class="stock-status stock-low">Stock Bajo</div>
-                            </div>
-                        </div>
-                        <div class="inventory-item">
-                            <div class="item-info">
-                                <h4>Tomate</h4>
-                                <p>Proveedor: Verduras Frescas</p>
-                            </div>
-                            <div class="stock-level">
-                                <div class="quantity">28.2</div>
-                                <div class="unit">kg</div>
-                                <div class="stock-status stock-ok">Stock OK</div>
-                            </div>
-                        </div>
+
+
+                    <div class="graph-box dark pie-box">
+                        <h3 class="left-title">Facturas Emitidas</h3>
+                        <canvas id="pieChartEmitidas"></canvas>
                     </div>
-                </div>
+
+
+                    <div class="graph-box dark pie-box">
+                        <h3 class="left-title">Facturas Recibidas</h3>
+                        <canvas id="pieChartRecibidas"></canvas>
+                    </div>
+
+
+                    <div class="graph-box dark">
+                        <h3>Productos Más Vendidos</h3>
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </section>
             </div>
 
-            <!-- AI Assistant Panel -->
-
-            <button id="toggleChatBtn" class="chat-fab">💬</button>
-
-
+            <!-- AI Assistant -->
             <div class="ai-assistant" id="aiAssistant">
                 <div class="ai-header">
-                    <button id="closeChatBtn" class="close-chat">&larr;</button>
                     <h3>🤖 Asistente IA</h3>
-                    <div class="ai-status" id="aiStatus">Listo para ayudar</div>
+                    <button id="closeChatBtn" class="close-chat">✖</button>
                 </div>
-
                 <div class="ai-chat" id="aiChat">
                     <div class="ai-message assistant">
-                        ¡Hola! Soy tu asistente de virtual. Puedo ayudarte con:
+                        ¡Hola! Soy tu asistente virtual. Puedo ayudarte con:
                         <br><br>
+                        💰 Consultas sobre ingresos y egresos<br>
+                        🏦 Información de bancos<br>
+                        🏪 Datos de proveedores<br>
                         📊 Reportes y análisis<br>
-                        📦 Consultas de inventario<br>
-                        💰 Estado financiero<br>
-                        👥 Información de personal<br>
-                        ✏️ Modificaciones (solo desde escritorio)
-                        <br><br>
-                        ¿En qué puedo ayudarte hoy?
+                        <br>
+                        ¿En qué puedo ayudarte?
                     </div>
                 </div>
-
                 <div class="ai-controls">
-                    <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">
-                        🎤 Mantén presionado para hablar
-                    </button>
-                    <input type="text" class="text-input" id="textInput" placeholder="Escribe tu pregunta aquí...">
+                    <input type="text" class="text-input" id="textInput" placeholder="Escribe tu pregunta...">
                     <button class="send-btn" onclick="sendMessage()">Enviar</button>
                 </div>
             </div>
-
         </div>
+
+        <!-- Chat FAB for mobile -->
+        <button id="toggleChatBtn" class="chat-fab">🤖</button>
     </div>
 
     <!-- Confirmation Modal -->
@@ -180,7 +751,6 @@
     </div>
 
     <script src="js/scripts.js"></script>
-
 
 </body>
 

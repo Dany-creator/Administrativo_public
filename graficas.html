@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gráficas</title>
   <link rel="stylesheet" href="styles/graficas.css" />
+  <link rel="stylesheet" href="styles/stepper.css" />
   <link rel="stylesheet" href="styles/navbar.css">
   <link rel="stylesheet" href="styles/base.css">
-  <link rel="stylesheet" href="styles/responsive.css">  
+  <link rel="stylesheet" href="styles/responsive.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
 
 
 </head>
+
 <body>
 
   <!-- Barra de navegación -->
@@ -29,441 +32,443 @@
   </div>
 
 
- <div class="step-content" id="stepContent0">
-  <h2>Balance de Ingresos/Egresos</h2>
+  <div class="step-content" id="stepContent0">
+    <h2>Balance de Ingresos/Egresos</h2>
 
-  <!-- Filtros por fecha -->
-  <div class="date-filter">
-    <label for="start-date">Desde:</label>
-    <input type="date" id="start-date" name="start-date" />
+    <!-- Filtros por fecha -->
+    <div class="date-filter">
+      <label for="start-date">Desde:</label>
+      <input type="date" id="start-date" name="start-date" />
 
-    <label for="end-date">Hasta:</label>
-    <input type="date" id="end-date" name="end-date" />
+      <label for="end-date">Hasta:</label>
+      <input type="date" id="end-date" name="end-date" />
+    </div>
+
+    <!-- Área de gráfica -->
+
+    <div class="chart-placeholder">
+      <canvas id="comboTimeChart"></canvas>
+    </div>
+
+
+    <!-- Buscador -->
+    <div class="search-container">
+      <input type="text" placeholder="Buscar por cliente, factura, etc." />
+    </div>
+
+    <!-- Tabla de actividad -->
+    <div class="activity-module">
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th>Nro. Factura</th>
+            <th>Cliente/Socio</th>
+            <th>Fecha</th>
+            <th>Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>001245</td>
+            <td>Juan Pérez</td>
+            <td>2025-06-01</td>
+            <td>$120.50</td>
+          </tr>
+          <tr>
+            <td>001246</td>
+            <td>María López</td>
+            <td>2025-06-03</td>
+            <td>$95.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
- <!-- Área de gráfica -->
- 
-<div class="chart-placeholder">
-  <canvas id="comboTimeChart"></canvas>
-</div>
-
-
-  <!-- Buscador -->
-  <div class="search-container">
-    <input type="text" placeholder="Buscar por cliente, factura, etc." />
-  </div>
-
-  <!-- Tabla de actividad -->
-  <div class="activity-module">
-    <table class="activity-table">
-      <thead>
-        <tr>
-          <th>Nro. Factura</th>
-          <th>Cliente/Socio</th>
-          <th>Fecha</th>
-          <th>Monto</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>001245</td>
-          <td>Juan Pérez</td>
-          <td>2025-06-01</td>
-          <td>$120.50</td>
-        </tr>
-        <tr>
-          <td>001246</td>
-          <td>María López</td>
-          <td>2025-06-03</td>
-          <td>$95.00</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-  <div class="step-content" id="stepContent1 "style="display: none;">
+  <div class="step-content" id="stepContent1 " style="display: none;">
     <h2>Facturas Emitidas</h2>
-      <!-- Filtros por fecha -->
-  <div class="date-filter">
-    <label for="start-date">Desde:</label>
-    <input type="date" id="start-date" name="start-date" />
+    <!-- Filtros por fecha -->
+    <div class="date-filter">
+      <label for="start-date">Desde:</label>
+      <input type="date" id="start-date" name="start-date" />
 
-    <label for="end-date">Hasta:</label>
-    <input type="date" id="end-date" name="end-date" />
-  </div>
+      <label for="end-date">Hasta:</label>
+      <input type="date" id="end-date" name="end-date" />
+    </div>
 
- <!-- Área de gráfica -->
- 
- <div class="chart-pie-wrapper">
-    <canvas id="pieChartEmitidas"></canvas>
-  </div>
+    <!-- Área de gráfica -->
 
-  <div class="cards-container">
-  <div class="info-card">
-    <h3>Socios</h3>
-    <p class="amount-usd">$10,00</p>
-    <p class="amount-bs">1.000,00Bs</p>
-  </div>
-  <div class="info-card">
-    <h3>Clientes</h3>
-    <p class="amount-usd">$70,00</p>
-    <p class="amount-bs">7.000,00Bs</p>
-  </div>
-  <div class="info-card">
-    <h3>Inversionistas</h3>
-    <p class="amount-usd">$20,00</p>
-    <p class="amount-bs">2.000,00Bs</p>
-  </div>
-</div>
+    <div class="chart-pie-wrapper">
+      <canvas id="pieChartEmitidas"></canvas>
+    </div>
+
+    <div class="cards-container">
+      <div class="info-card">
+        <h3>Socios</h3>
+        <p class="amount-usd">$10,00</p>
+        <p class="amount-bs">1.000,00Bs</p>
+      </div>
+      <div class="info-card">
+        <h3>Clientes</h3>
+        <p class="amount-usd">$70,00</p>
+        <p class="amount-bs">7.000,00Bs</p>
+      </div>
+      <div class="info-card">
+        <h3>Inversionistas</h3>
+        <p class="amount-usd">$20,00</p>
+        <p class="amount-bs">2.000,00Bs</p>
+      </div>
+    </div>
 
 
-  <!-- Buscador -->
-  <div class="search-container">
-    <input type="text" placeholder="Buscar por cliente, factura, etc." />
-  </div>
+    <!-- Buscador -->
+    <div class="search-container">
+      <input type="text" placeholder="Buscar por cliente, factura, etc." />
+    </div>
 
-  <!-- Tabla de actividad -->
-  <div class="activity-module">
-    <table class="activity-table">
-      <thead>
-        <tr>
-          <th>Nro. Factura</th>
-          <th>Cliente/Socio</th>
-          <th>Fecha</th>
-          <th>Monto</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>001245</td>
-          <td>Juan Pérez</td>
-          <td>2025-06-01</td>
-          <td>$120.50</td>
-        </tr>
-        <tr>
-          <td>001246</td>
-          <td>María López</td>
-          <td>2025-06-03</td>
-          <td>$95.00</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>  
+    <!-- Tabla de actividad -->
+    <div class="activity-module">
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th>Nro. Factura</th>
+            <th>Cliente/Socio</th>
+            <th>Fecha</th>
+            <th>Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>001245</td>
+            <td>Juan Pérez</td>
+            <td>2025-06-01</td>
+            <td>$120.50</td>
+          </tr>
+          <tr>
+            <td>001246</td>
+            <td>María López</td>
+            <td>2025-06-03</td>
+            <td>$95.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
   <div class="step-content" id="stepContent2" style="display: none;">
     <h2>Facturas Recibidas</h2>
-     <div class="date-filter">
-    <label for="start-date">Desde:</label>
-    <input type="date" id="start-date" name="start-date" />
+    <div class="date-filter">
+      <label for="start-date">Desde:</label>
+      <input type="date" id="start-date" name="start-date" />
 
-    <label for="end-date">Hasta:</label>
-    <input type="date" id="end-date" name="end-date" />
-  </div>
+      <label for="end-date">Hasta:</label>
+      <input type="date" id="end-date" name="end-date" />
+    </div>
 
- <!-- Área de gráfica -->
- 
- <div class="chart-pie-wrapper">
-    <canvas id="pieChartRecibidas"></canvas>
-  </div>
+    <!-- Área de gráfica -->
 
-      <div class="cards-container">
-  <div class="info-card">
-    <h3>Socios</h3>
-    <p class="amount-usd">$25,00</p>
-    <p class="amount-bs">2.500,00Bs</p>
-  </div>
-  <div class="info-card">
-    <h3>Reponer Inventario</h3>
-    <p class="amount-usd">$40,00</p>
-    <p class="amount-bs">4.000,00Bs</p>
-  </div>
-  <div class="info-card">
-    <h3>Facturas</h3>
-    <p class="amount-usd">$35,00</p>
-    <p class="amount-bs">3.500,00Bs</p>
-  </div>
-</div>
+    <div class="chart-pie-wrapper">
+      <canvas id="pieChartRecibidas"></canvas>
+    </div>
 
-  <!-- Buscador -->
-  <div class="search-container">
-    <input type="text" placeholder="Buscar por cliente, factura, etc." />
-  </div>
+    <div class="cards-container">
+      <div class="info-card">
+        <h3>Socios</h3>
+        <p class="amount-usd">$25,00</p>
+        <p class="amount-bs">2.500,00Bs</p>
+      </div>
+      <div class="info-card">
+        <h3>Reponer Inventario</h3>
+        <p class="amount-usd">$40,00</p>
+        <p class="amount-bs">4.000,00Bs</p>
+      </div>
+      <div class="info-card">
+        <h3>Facturas</h3>
+        <p class="amount-usd">$35,00</p>
+        <p class="amount-bs">3.500,00Bs</p>
+      </div>
+    </div>
 
-  <!-- Tabla de actividad -->
-  <div class="activity-module">
-    <table class="activity-table">
-      <thead>
-        <tr>
-          <th>Nro. Factura</th>
-          <th>Cliente/Socio</th>
-          <th>Fecha</th>
-          <th>Monto</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>001245</td>
-          <td>Juan Pérez</td>
-          <td>2025-06-01</td>
-          <td>$120.50</td>
-        </tr>
-        <tr>
-          <td>001246</td>
-          <td>María López</td>
-          <td>2025-06-03</td>
-          <td>$95.00</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>  
+    <!-- Buscador -->
+    <div class="search-container">
+      <input type="text" placeholder="Buscar por cliente, factura, etc." />
+    </div>
+
+    <!-- Tabla de actividad -->
+    <div class="activity-module">
+      <table class="activity-table">
+        <thead>
+          <tr>
+            <th>Nro. Factura</th>
+            <th>Cliente/Socio</th>
+            <th>Fecha</th>
+            <th>Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>001245</td>
+            <td>Juan Pérez</td>
+            <td>2025-06-01</td>
+            <td>$120.50</td>
+          </tr>
+          <tr>
+            <td>001246</td>
+            <td>María López</td>
+            <td>2025-06-03</td>
+            <td>$95.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
   <div class="step-content" id="stepContent3" style="display: none;">
     <h2>Artículos mas vendidos</h2>
-      <div class="date-filter">
-    <label for="start-date">Desde:</label>
-    <input type="date" id="start-date" name="start-date" />
+    <div class="date-filter">
+      <label for="start-date">Desde:</label>
+      <input type="date" id="start-date" name="start-date" />
 
-    <label for="end-date">Hasta:</label>
-    <input type="date" id="end-date" name="end-date" />
+      <label for="end-date">Hasta:</label>
+      <input type="date" id="end-date" name="end-date" />
+    </div>
+
+    <!-- Área de gráfica -->
+
+    <div class="chart-placeholder">
+      <canvas id="barChart"></canvas>
+    </div>
+
   </div>
+  <!-- Grafica de Ingresos y egresos -->
+  <script>
+    const ctx = document.getElementById('comboTimeChart').getContext('2d');
 
- <!-- Área de gráfica -->
-
-<div class="chart-placeholder">
-  <canvas id="barChart"></canvas>
-</div>
-  
-  </div>
-<script>
-  const ctx = document.getElementById('comboTimeChart').getContext('2d');
-
-  const comboTimeChart = new Chart(ctx, {
-    data: {
-      datasets: [
-        {
-          type: 'bar',
-          label: 'Ingresos',
-          backgroundColor: '#1abc9c',
-          data: [
-            { x: '2025-06-01', y: 200 },
-            { x: '2025-06-03', y: 300 },
-            { x: '2025-06-06', y: 250 },
-            { x: '2025-06-08', y: 400 },
-            { x: '2025-06-10', y: 350 },
-            { x: '2025-06-12', y: 420 }
-          ],
-          barPercentage: 0.8,
-          categoryPercentage: 0.7
-        },
-        {
-          type: 'bar',
-          label: 'Egresos',
-          backgroundColor: '#e74c3c',
-          data: [
-            { x: '2025-06-01', y: 150 },
-            { x: '2025-06-03', y: 200 },
-            { x: '2025-06-06', y: 100 },
-            { x: '2025-06-08', y: 250 },
-            { x: '2025-06-10', y: 200 },
-            { x: '2025-06-12', y: 300 }
-          ],
-          barPercentage: 0.8,
-          categoryPercentage: 0.7
-        },
-        {
-          type: 'line',
-          label: 'Tendencia Ingresos',
-          borderColor: '#3498db',
-          borderWidth: 2,
-          fill: false,
-          data: [
-            { x: '2025-06-01', y: 200 },
-            { x: '2025-06-03', y: 300 },
-            { x: '2025-06-06', y: 250 },
-            { x: '2025-06-08', y: 400 },
-            { x: '2025-06-10', y: 350 },
-            { x: '2025-06-12', y: 420 }
-          ],
-          tension: 0.3,
-          pointBackgroundColor: '#3498db'
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: {
-          type: 'time',
-          time: {
-            unit: 'day',
-            tooltipFormat: 'yyyy-MM-dd'
+    const comboTimeChart = new Chart(ctx, {
+      data: {
+        datasets: [
+          {
+            type: 'bar',
+            label: 'Ingresos',
+            backgroundColor: '#1abc9c',
+            data: [
+              { x: '2025-06-01', y: 200 },
+              { x: '2025-06-03', y: 300 },
+              { x: '2025-06-06', y: 250 },
+              { x: '2025-06-08', y: 400 },
+              { x: '2025-06-10', y: 350 },
+              { x: '2025-06-12', y: 420 }
+            ],
+            barPercentage: 0.8,
+            categoryPercentage: 0.7
           },
-          stacked: false,
-          ticks: {
-            color: '#fff'
+          {
+            type: 'bar',
+            label: 'Egresos',
+            backgroundColor: '#e74c3c',
+            data: [
+              { x: '2025-06-01', y: 150 },
+              { x: '2025-06-03', y: 200 },
+              { x: '2025-06-06', y: 100 },
+              { x: '2025-06-08', y: 250 },
+              { x: '2025-06-10', y: 200 },
+              { x: '2025-06-12', y: 300 }
+            ],
+            barPercentage: 0.8,
+            categoryPercentage: 0.7
           },
-          grid: {
-            color: '#333'
+          {
+            type: 'line',
+            label: 'Tendencia Ingresos',
+            borderColor: '#3498db',
+            borderWidth: 2,
+            fill: false,
+            data: [
+              { x: '2025-06-01', y: 200 },
+              { x: '2025-06-03', y: 300 },
+              { x: '2025-06-06', y: 250 },
+              { x: '2025-06-08', y: 400 },
+              { x: '2025-06-10', y: 350 },
+              { x: '2025-06-12', y: 420 }
+            ],
+            tension: 0.3,
+            pointBackgroundColor: '#3498db'
           }
-        },
-        y: {
-          stacked: false,
-          ticks: {
-            color: '#fff'
-          },
-          grid: {
-            color: '#333'
-          }
-        }
+        ]
       },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            type: 'time',
+            time: {
+              unit: 'day',
+              tooltipFormat: 'yyyy-MM-dd'
+            },
+            stacked: false,
+            ticks: {
+              color: '#fff'
+            },
+            grid: {
+              color: '#333'
+            }
+          },
+          y: {
+            stacked: false,
+            ticks: {
+              color: '#fff'
+            },
+            grid: {
+              color: '#333'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: '#fff'
+            }
+          }
+        }
+      }
+    });
+  </script>
+  <!-- Grafica de Pie -->
+  <script>
+    const pieEmitidas = document.getElementById('pieChartEmitidas');
+    const pieRecibidas = document.getElementById('pieChartRecibidas');
+
+    const pieColors = ['#00b894', '#0984e3', '#6c5ce7'];
+    const borderColor = '#2d3436';
+
+    const pieOptions = {
+      responsive: true,
       plugins: {
         legend: {
+          position: 'top',
           labels: {
-            color: '#fff'
+            color: '#fff',
+            font: {
+              size: 14,
+              weight: 'bold'
+            },
+            padding: 20
           }
-        }
-      }
-    }
-  });
-</script>
-<script>
-  const pieEmitidas = document.getElementById('pieChartEmitidas');
-  const pieRecibidas = document.getElementById('pieChartRecibidas');
-
-  const pieColors = ['#00b894', '#0984e3', '#6c5ce7'];
-  const borderColor = '#2d3436';
-
-  const pieOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
+        },
+        datalabels: {
           color: '#fff',
-          font: {
-            size: 14,
-            weight: 'bold'
+          formatter: (value, context) => {
+            const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+            const percentage = (value / total * 100).toFixed(1);
+            return `${percentage}%`;
           },
-          padding: 20
-        }
-      },
-      datalabels: {
-        color: '#fff',
-        formatter: (value, context) => {
-          const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-          const percentage = (value / total * 100).toFixed(1);
-          return `${percentage}%`;
-        },
-        font: {
-          weight: 'bold',
-          size: 14
-        }
-      }
-    },
-    animation: {
-      animateScale: true,
-      animateRotate: true
-    }
-  };
-
-  if (pieEmitidas) {
-    new Chart(pieEmitidas, {
-      type: 'pie',
-      data: {
-        labels: ['Socios', 'Clientes', 'Inversionistas'],
-        datasets: [{
-          label: 'Facturas Emitidas',
-          data: [10, 70, 20],
-          backgroundColor: pieColors,
-          borderColor: borderColor,
-          borderWidth: 2
-        }]
-      },
-      options: pieOptions,
-      plugins: [ChartDataLabels]
-    });
-  }
-
-  if (pieRecibidas) {
-    new Chart(pieRecibidas, {
-      type: 'pie',
-      data: {
-        labels: ['Socios', 'Reponer Inventario', 'Facturas'],
-        datasets: [{
-          label: 'Facturas Recibidas',
-          data: [25, 40, 35],
-          backgroundColor: pieColors,
-          borderColor: borderColor,
-          borderWidth: 2
-        }]
-      },
-      options: pieOptions,
-      plugins: [ChartDataLabels]
-    });
-  }
-</script>
-
-<script>
-  const barCtx = document.getElementById('barChart').getContext('2d');
-
-  const barChart = new Chart(barCtx, {
-    type: 'bar',
-    data: {
-      labels: ['Articulo 1', ' Articulo 2', 'Articulo 3', 'Articulo 4'],
-      datasets: [{
-        label: 'Cantidad vendida',
-        data: [120, 95, 85, 60], 
-        backgroundColor: [
-          '#1abc9c',
-          '#3498db',
-          '#9b59b6',
-          '#e67e22'
-        ],
-        borderRadius: 8,
-        barThickness: 25
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: {
-          ticks: { color: '#fff' },
-          grid: { color: '#333' }
-        },
-        y: {
-          ticks: { color: '#fff' },
-          grid: { color: '#333' }
-        }
-      },
-      plugins: {
-        legend: {
-          display: false
-        },
-        tooltip: {
-          callbacks: {
-            label: (context) => `${context.parsed.x} unidades`
-          }
-        },
-        title: {
-          display: true,
-          text: 'Productos más vendidos',
-          color: '#fff',
           font: {
-            size: 16,
-            weight: 'bold'
+            weight: 'bold',
+            size: 14
+          }
+        }
+      },
+      animation: {
+        animateScale: true,
+        animateRotate: true
+      }
+    };
+
+    if (pieEmitidas) {
+      new Chart(pieEmitidas, {
+        type: 'pie',
+        data: {
+          labels: ['Socios', 'Clientes', 'Inversionistas'],
+          datasets: [{
+            label: 'Facturas Emitidas',
+            data: [10, 70, 20],
+            backgroundColor: pieColors,
+            borderColor: borderColor,
+            borderWidth: 2
+          }]
+        },
+        options: pieOptions,
+        plugins: [ChartDataLabels]
+      });
+    }
+
+    if (pieRecibidas) {
+      new Chart(pieRecibidas, {
+        type: 'pie',
+        data: {
+          labels: ['Socios', 'Reponer Inventario', 'Facturas'],
+          datasets: [{
+            label: 'Facturas Recibidas',
+            data: [25, 40, 35],
+            backgroundColor: pieColors,
+            borderColor: borderColor,
+            borderWidth: 2
+          }]
+        },
+        options: pieOptions,
+        plugins: [ChartDataLabels]
+      });
+    }
+  </script>
+  <!-- Grafica de productos vendidos -->
+  <script>
+    const barCtx = document.getElementById('barChart').getContext('2d');
+
+    const barChart = new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Articulo 1', ' Articulo 2', 'Articulo 3', 'Articulo 4'],
+        datasets: [{
+          label: 'Cantidad vendida',
+          data: [120, 95, 85, 60],
+          backgroundColor: [
+            '#1abc9c',
+            '#3498db',
+            '#9b59b6',
+            '#e67e22'
+          ],
+          borderRadius: 8,
+          barThickness: 25
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            ticks: { color: '#fff' },
+            grid: { color: '#333' }
+          },
+          y: {
+            ticks: { color: '#fff' },
+            grid: { color: '#333' }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: (context) => `${context.parsed.x} unidades`
+            }
+          },
+          title: {
+            display: true,
+            text: 'Productos más vendidos',
+            color: '#fff',
+            font: {
+              size: 16,
+              weight: 'bold'
+            }
           }
         }
       }
-    }
-  });
-</script>
+    });
+  </script>
 
 
   <script src="js/scripts.js"></script>
-  
 </body>
+
 </html>

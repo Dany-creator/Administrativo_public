@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bancos</title>
+  <link rel="stylesheet" href="styles/formulario.css" />
+  <link rel="stylesheet" href="styles/stepper.css" />
+  <link rel="stylesheet" href="styles/navbar.css">
+  <link rel="stylesheet" href="styles/base.css">
+
+
+</head>
+
+<body>
+
+  <!-- Barra de navegación -->
+  <div id="navbar-container"></div>
+
+  <div class="stepper-container">
+    <div class="stepper">
+      <div class="step active" onclick="showStep(0)">Registrar Ingreso</div>
+      <div class="step" onclick="showStep(1)">Registrar Egreso</div>
+    </div>
+  </div>
+
+
+  <div class="step-content" id="stepContent0">
+    <section class="form-container">
+      <div class="form-card">
+        <h2>Registrar Ingreso</h2>
+        <form>
+
+
+          <div class="form-group">
+            <label for="monto">Monto</label>
+            <input type="number" id="monto" name="monto" required placeholder="Ej. 5000">
+          </div>
+
+
+          <div class="form-group">
+            <label for="tipo-ingreso">Tipo</label>
+            <div class="custom-select" data-form="ingreso">
+              <div class="selected">Selecciona un tipo</div>
+              <div class="options">
+                <div class="option" data-value="salario">Salario</div>
+                <div class="option" data-value="venta">Venta</div>
+              </div>
+            </div>
+            <input type="hidden" id="tipo-ingreso" name="tipo">
+          </div>
+
+
+          <div class="form-group">
+            <label for="banco">Banco</label>
+            <input type="text" id="banco" name="banco" required placeholder="Nombre del banco">
+          </div>
+
+
+          <div class="form-group">
+            <label for="parte">Por parte de</label>
+            <input type="text" id="parte" name="parte" required placeholder="Ej. Cliente, Proveedor">
+          </div>
+
+
+          <div class="form-group">
+            <label for="razon">Razón</label>
+            <input type="text" id="razon" name="razon" required placeholder="Motivo del ingreso/egreso">
+          </div>
+
+
+          <div class="form-group">
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" name="fecha" required>
+          </div>
+
+
+          <div class="form-group">
+            <button type="submit">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+
+
+  </div>
+
+  <div class="step-content" id="stepContent1 " style="display: none;">
+    <section class="form-container dark">
+      <div class="form-card">
+        <h2>Registrar Egreso</h2>
+        <form>
+          <div class="form-group">
+            <label for="monto">Monto</label>
+            <input type="number" id="monto" name="monto" required placeholder="Ej. 5000">
+          </div>
+
+
+
+          <div class="form-group">
+            <label for="tipo-egreso">Tipo</label>
+            <div class="custom-select" data-form="egreso">
+              <div class="selected">Selecciona un tipo</div>
+              <div class="options">
+                <div class="option" data-value="gastos">Gastos</div>
+                <div class="option" data-value="nomina">Nomina</div>
+                <div class="option" data-value="pago-proveedores">Pago proveedores</div>
+                <div class="option" data-value="socios">Socios</div>
+                <div class="option" data-value="Impuestos">Impuestos</div>
+              </div>
+            </div>
+            <input type="hidden" id="tipo-egreso" name="tipo">
+          </div>
+
+          <div class="form-group">
+            <label for="banco">Banco</label>
+            <input type="text" id="banco" name="banco" required placeholder="Nombre del banco">
+          </div>
+
+          <div class="form-group">
+            <label for="parte">Por parte de</label>
+            <input type="text" id="parte" name="parte" required placeholder="Ej. Cliente, Proveedor">
+          </div>
+
+          <div class="form-group">
+            <label for="razon">Razón</label>
+            <input type="text" id="razon" name="razon" required placeholder="Motivo del ingreso/egreso">
+          </div>
+
+          <div class="form-group">
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" name="fecha" required>
+          </div>
+
+          <div class="form-group">
+            <button type="submit">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    document.querySelectorAll('.custom-select').forEach(select => {
+      const selected = select.querySelector('.selected');
+      const options = select.querySelector('.options');
+      const formType = select.dataset.form; // "ingreso" o "egreso"
+      const hiddenInput = document.getElementById(`tipo-${formType}`);
+
+      selected.addEventListener('click', () => {
+        options.style.display = options.style.display === 'block' ? 'none' : 'block';
+      });
+
+      options.querySelectorAll('.option').forEach(option => {
+        option.addEventListener('click', () => {
+          selected.textContent = option.textContent;
+          hiddenInput.value = option.dataset.value;
+          options.style.display = 'none';
+        });
+      });
+
+      // Ocultar si se hace clic fuera del select
+      document.addEventListener('click', (e) => {
+        if (!select.contains(e.target)) {
+          options.style.display = 'none';
+        }
+      });
+    });
+  </script>
+
+
+
+  <script src="js/scripts.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      loadNavbar();
+    });
+  </script>
+</body>
+
+</html>

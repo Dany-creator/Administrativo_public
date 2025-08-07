@@ -1,0 +1,94 @@
+/* CONTENEDOR PRINCIPAL DEL STEPPER */
+.stepper-container {
+  margin-top: 80px;
+  width: 100%;
+  background-color: #000;
+  padding: 20px 0;
+}
+
+
+.stepper {
+  display: flex;
+  justify-content: space-around;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 5px;
+  gap: 10px;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+
+.step {
+  font-size: 16px;
+  font-weight: 500;
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 10px 20px;
+  transition: color 0.3s ease;
+  white-space: nowrap;
+  position: relative;
+}
+
+.step:hover {
+  color: #66b2ff;
+}
+
+.step.active {
+  color: #1e90ff;
+}
+
+.stepper::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background-color: #222;
+  z-index: 0;
+}
+
+.stepper .step::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  width: 100%;
+  background-color: #1e90ff;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.3s ease;
+  z-index: 1;
+}
+
+.step.active::after {
+  transform: scaleX(1);
+}
+
+
+.step-content {
+  padding: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+  color: #f5f5f5;
+  background-color: #111;
+  border-radius: 8px;
+}
+
+
+
+@media screen and (max-width: 430px) {
+  .stepper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .step {
+    width: 100%;
+    text-align: center;
+  }
+}
