@@ -1,25 +1,12 @@
 // System Data Storage
 let systemData = {
-    ingresos: JSON.parse(localStorage.getItem('ingresos') || '[]'),
-    egresos: JSON.parse(localStorage.getItem('egresos') || '[]'),
-    bancos: JSON.parse(localStorage.getItem('bancos') || '[]'),
-    proveedores: JSON.parse(localStorage.getItem('proveedores') || '[]'),
-    inventory: [
-        { id: 1, name: 'Producto A', quantity: 25, unit: 'unidades', minStock: 10, supplier: 'Proveedor 1' },
-        { id: 2, name: 'Producto B', quantity: 8, unit: 'kg', minStock: 5, supplier: 'Proveedor 2' },
-        { id: 3, name: 'Producto C', quantity: 15, unit: 'litros', minStock: 20, supplier: 'Proveedor 3' }
-    ],
-    sales: {
-        today: 12450,
-        yesterday: 11500,
-        clients: 85,
-        avgTicket: 146.47
-    },
-    staff: {
-        active: 8,
-        total: 10,
-        absent: ['Juan Pérez', 'María González']
-    }
+    ingresos: [],
+    egresos: [],
+    bancos: [],
+    proveedores: [],
+    inventory: [],
+    sales: {},
+    staff: {}
 };
 
 let isRecording = false;
@@ -27,12 +14,28 @@ let isMobile = window.innerWidth <= 768;
 
 // Google Sheets Configuration
 const GOOGLE_SHEETS_CONFIG = {
-    SPREADSHEET_ID: 'TU_ID_DE_GOOGLE_SHEET_AQUI',
-    API_KEY: 'TU_API_KEY_AQUI',
-    INVENTORY_RANGE: 'Inventario!A:F',
-    SALES_RANGE: 'Ventas!A:E',
-    STAFF_RANGE: 'Personal!A:D'
+    SPREADSHEET_ID: '1zh5En4C6KyTajqt50pXTUQVuzxMTBOninxqLMngJngU',
+    API_KEY: 'AIzaSyBXOXiYxqiO_vwxcXMRFxDimjDQ1_GO-xI',
 };
+
+async function saveToGoogleSheet(sheetName, rowData) {
+    const apiUrl = 'http://127.0.0.1:5000/add?sheet=' + sheetName; // Cambia la IP si usas otro servidor
+    try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            body: JSON.stringify(rowData),
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const result = await response.json();
+        if (result.status === "OK") {
+            addMessage('✅ Datos guardados en Google Sheets', 'assistant');
+        } else {
+            addMessage('❌ Error al guardar en Google Sheets: ' + (result.error || ''), 'assistant');
+        }
+    } catch (error) {
+        addMessage('❌ Error de conexión con el backend Python', 'assistant');
+    }
+}
 
 // Session Management
 function checkSession() {
@@ -161,73 +164,21 @@ function initializeDashboard() {
     initializeFormListeners();
 }
 
-// Card Toggle Functionality
 function toggleCard(cardName) {
-    // Helper para abrir/cerrar una card
-    function toggleSingleCard(name, forceOpen = false) {
-        const content = document.getElementById(name + '-content');
-        if (content) {
-            const header = content.previousElementSibling;
-            if (forceOpen) {
-                content.classList.add('active');
-                header.classList.add('active');
-            } else {
-                content.classList.toggle('active');
-                header.classList.toggle('active');
-            }
-        }
-    }
+    const content = document.getElementById(cardName + '-content');
+    const header = content ? content.previousElementSibling : null;
+    const isActive = content && content.classList.contains('active');
 
-    // Pares de cards que deben abrirse/cerrarse juntos
-    if (cardName === 'ingresos' || cardName === 'egresos') {
-        // Si cualquiera de los dos se toca, ambos se alternan juntos
-        const ingresosContent = document.getElementById('ingresos-content');
-        const egresosContent = document.getElementById('egresos-content');
-        const ingresosHeader = ingresosContent ? ingresosContent.previousElementSibling : null;
-        const egresosHeader = egresosContent ? egresosContent.previousElementSibling : null;
+    // Cierra todas las cards
+    const allContents = document.querySelectorAll('.card-content');
+    const allHeaders = document.querySelectorAll('.card-header');
+    allContents.forEach(c => c.classList.remove('active'));
+    allHeaders.forEach(h => h.classList.remove('active'));
 
-        const isActive = ingresosContent && ingresosContent.classList.contains('active') &&
-            egresosContent && egresosContent.classList.contains('active');
-
-        if (isActive) {
-            // Si ambos están abiertos, ciérralos
-            if (ingresosContent) ingresosContent.classList.remove('active');
-            if (egresosContent) egresosContent.classList.remove('active');
-            if (ingresosHeader) ingresosHeader.classList.remove('active');
-            if (egresosHeader) egresosHeader.classList.remove('active');
-        } else {
-            // Si alguno está cerrado, ábrelos ambos
-            if (ingresosContent) ingresosContent.classList.add('active');
-            if (egresosContent) egresosContent.classList.add('active');
-            if (ingresosHeader) ingresosHeader.classList.add('active');
-            if (egresosHeader) egresosHeader.classList.add('active');
-        }
-    } else if (cardName === 'bancos' || cardName === 'proveedores') {
-        // Si cualquiera de los dos se toca, ambos se alternan juntos
-        const bancosContent = document.getElementById('bancos-content');
-        const proveedoresContent = document.getElementById('proveedores-content');
-        const bancosHeader = bancosContent ? bancosContent.previousElementSibling : null;
-        const proveedoresHeader = proveedoresContent ? proveedoresContent.previousElementSibling : null;
-
-        const isActive = bancosContent && bancosContent.classList.contains('active') &&
-            proveedoresContent && proveedoresContent.classList.contains('active');
-
-        if (isActive) {
-            // Si ambos están abiertos, ciérralos
-            if (bancosContent) bancosContent.classList.remove('active');
-            if (proveedoresContent) proveedoresContent.classList.remove('active');
-            if (bancosHeader) bancosHeader.classList.remove('active');
-            if (proveedoresHeader) proveedoresHeader.classList.remove('active');
-        } else {
-            // Si alguno está cerrado, ábrelos ambos
-            if (bancosContent) bancosContent.classList.add('active');
-            if (proveedoresContent) proveedoresContent.classList.add('active');
-            if (bancosHeader) bancosHeader.classList.add('active');
-            if (proveedoresHeader) proveedoresHeader.classList.add('active');
-        }
-    } else {
-        // Para las demás cards, alterna normalmente
-        toggleSingleCard(cardName);
+    // Si no estaba activa, ábrela; si estaba activa, déjala cerrada
+    if (!isActive && content) {
+        content.classList.add('active');
+        if (header) header.classList.add('active');
     }
 }
 
@@ -363,7 +314,7 @@ function initializeFormListeners() {
     // Ingresos Form
     const ingresosForm = document.getElementById('ingresosForm');
     if (ingresosForm) {
-        ingresosForm.addEventListener('submit', function (e) {
+        ingresosForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const fecha = document.getElementById('ingresoFecha').value;
             const banco = document.getElementById('ingresoBanco').value;
@@ -371,26 +322,23 @@ function initializeFormListeners() {
             const monto = parseFloat(document.getElementById('ingresoMonto').value);
             const descripcion = document.getElementById('ingresoDescripcion').value;
 
-            // Validación
             if (!fecha || !banco || !moneda || isNaN(monto) || !descripcion) {
+                alert('Por favor, completa todos los campos de ingreso.');
                 return;
             }
 
-            const ingreso = { fecha, banco, moneda, monto, descripcion };
-            systemData.ingresos.push(ingreso);
-            saveData('ingresos', systemData.ingresos);
-            loadTableData('ingresos');
+            const ingreso = [fecha, banco, moneda, monto, descripcion];
+            await saveToGoogleSheet('Ingresos', ingreso);
+            loadDataFromGoogleSheets();
             this.reset();
             document.getElementById('ingresoFecha').value = new Date().toISOString().split('T')[0];
-
-            addMessage(`✅ Ingreso agregado: $${ingreso.monto.toLocaleString()} ${ingreso.moneda}`, 'assistant');
         });
     }
 
     // Egresos Form
     const egresosForm = document.getElementById('egresosForm');
     if (egresosForm) {
-        egresosForm.addEventListener('submit', function (e) {
+        egresosForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const fecha = document.getElementById('egresoFecha').value;
             const banco = document.getElementById('egresoBanco').value;
@@ -399,69 +347,60 @@ function initializeFormListeners() {
             const proveedor = document.getElementById('egresoProveedor').value || '';
             const descripcion = document.getElementById('egresoDescripcion').value;
 
-            // Validación
             if (!fecha || !banco || !tipo || isNaN(monto) || !descripcion) {
+                alert('Por favor, completa todos los campos de egreso.');
                 return;
             }
 
-            const egreso = { fecha, banco, tipo, monto, proveedor, descripcion };
-            systemData.egresos.push(egreso);
-            saveData('egresos', systemData.egresos);
-            loadTableData('egresos');
+            const egreso = [fecha, banco, tipo, monto, proveedor, descripcion];
+            await saveToGoogleSheet('Egresos', egreso);
+            loadDataFromGoogleSheets();
             this.reset();
             document.getElementById('egresoFecha').value = new Date().toISOString().split('T')[0];
             document.getElementById('proveedorGroup').style.display = 'none';
-
-            addMessage(`✅ Egreso agregado: $${egreso.monto.toLocaleString()} - ${egreso.tipo}`, 'assistant');
         });
     }
 
     // Bancos Form
     const bancosForm = document.getElementById('bancosForm');
     if (bancosForm) {
-        bancosForm.addEventListener('submit', function (e) {
+        bancosForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const nombre = document.getElementById('bancoNombre').value;
             const cuenta = document.getElementById('bancoCuenta').value;
             const saldo = parseFloat(document.getElementById('bancoSaldo').value);
 
-            // Validación
             if (!nombre || !cuenta || isNaN(saldo)) {
+                alert('Por favor, completa todos los campos de banco.');
                 return;
             }
 
-            const banco = { nombre, cuenta, saldo };
-            systemData.bancos.push(banco);
-            saveData('bancos', systemData.bancos);
-            loadTableData('bancos');
+            const banco = [nombre, cuenta, saldo];
+            await saveToGoogleSheet('Bancos', banco);
+            loadDataFromGoogleSheets();
             this.reset();
-
-            addMessage(`✅ Banco agregado: ${banco.nombre}`, 'assistant');
         });
     }
 
     // Proveedores Form
     const proveedoresForm = document.getElementById('proveedoresForm');
     if (proveedoresForm) {
-        proveedoresForm.addEventListener('submit', function (e) {
+        proveedoresForm.addEventListener('submit', async function (e) {
             e.preventDefault();
             const nombre = document.getElementById('proveedorNombre').value;
             const contacto = document.getElementById('proveedorContacto').value;
             const telefono = document.getElementById('proveedorTelefono').value;
             const email = document.getElementById('proveedorEmail').value;
 
-            // Validación
             if (!nombre || !contacto || !telefono || !email) {
+                alert('Por favor, completa todos los campos de proveedor.');
                 return;
             }
 
-            const proveedor = { nombre, contacto, telefono, email };
-            systemData.proveedores.push(proveedor);
-            saveData('proveedores', systemData.proveedores);
-            loadTableData('proveedores');
+            const proveedor = [nombre, contacto, telefono, email];
+            await saveToGoogleSheet('Proveedores', proveedor);
+            loadDataFromGoogleSheets();
             this.reset();
-
-            addMessage(`✅ Proveedor agregado: ${proveedor.nombre}`, 'assistant');
         });
     }
 
@@ -733,29 +672,113 @@ window.addEventListener('resize', function () {
 
 // Google Sheets Functions (keeping for future use)
 async function loadDataFromGoogleSheets() {
+
+    document.addEventListener('DOMContentLoaded', function () {
+        loadDataFromGoogleSheets();
+        initializeSystem();
+        initializeVoiceControls();
+        startAutoRefresh();
+        console.log('Sistema de Administración Inicializado');
+    });
+
     try {
-        const inventoryData = await fetchGoogleSheetData(GOOGLE_SHEETS_CONFIG.INVENTORY_RANGE);
-        const salesData = await fetchGoogleSheetData(GOOGLE_SHEETS_CONFIG.SALES_RANGE);
-        const staffData = await fetchGoogleSheetData(GOOGLE_SHEETS_CONFIG.STAFF_RANGE);
+        // Cargar cada pestaña
+        const ingresosData = await fetchGoogleSheetData('Ingresos!A:E');
+        const egresosData = await fetchGoogleSheetData('Egresos!A:F');
+        const bancosData = await fetchGoogleSheetData('Bancos!A:C');
+        const proveedoresData = await fetchGoogleSheetData('Proveedores!A:D');
 
-        if (inventoryData && inventoryData.values) {
-            systemData.inventory = parseInventoryData(inventoryData.values);
+        // Parsear y guardar en systemData
+        if (ingresosData && ingresosData.values) {
+            systemData.ingresos = parseIngresosData(ingresosData.values);
         }
-
-        if (salesData && salesData.values) {
-            systemData.sales = parseSalesData(salesData.values);
+        if (egresosData && egresosData.values) {
+            systemData.egresos = parseEgresosData(egresosData.values);
         }
-
-        if (staffData && staffData.values) {
-            systemData.staff = parseStaffData(staffData.values);
+        if (bancosData && bancosData.values) {
+            systemData.bancos = parseBancosData(bancosData.values);
+        }
+        if (proveedoresData && proveedoresData.values) {
+            systemData.proveedores = parseProveedoresData(proveedoresData.values);
         }
 
         addMessage('✅ Datos actualizados desde Google Sheets', 'assistant');
+        // Actualiza la UI
+        loadAllData();
+        updateSummaryCards();
+        updateSelectOptions();
+        updateComboTimeChart();
 
     } catch (error) {
         console.error('Error loading data from Google Sheets:', error);
         addMessage('❌ Error al cargar datos de Google Sheets. Usando datos locales.', 'assistant');
     }
+}
+
+function parseIngresosData(values) {
+    const ingresos = [];
+    for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        if (row.length >= 5) {
+            ingresos.push({
+                fecha: row[0] || '',
+                banco: row[1] || '',
+                moneda: row[2] || '',
+                monto: parseFloat(row[3]) || 0,
+                descripcion: row[4] || ''
+            });
+        }
+    }
+    return ingresos;
+}
+
+function parseEgresosData(values) {
+    const egresos = [];
+    for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        if (row.length >= 6) {
+            egresos.push({
+                fecha: row[0] || '',
+                banco: row[1] || '',
+                tipo: row[2] || '',
+                monto: parseFloat(row[3]) || 0,
+                proveedor: row[4] || '',
+                descripcion: row[5] || ''
+            });
+        }
+    }
+    return egresos;
+}
+
+function parseBancosData(values) {
+    const bancos = [];
+    for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        if (row.length >= 3) {
+            bancos.push({
+                nombre: row[0] || '',
+                cuenta: row[1] || '',
+                saldo: parseFloat(row[2]) || 0
+            });
+        }
+    }
+    return bancos;
+}
+
+function parseProveedoresData(values) {
+    const proveedores = [];
+    for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        if (row.length >= 4) {
+            proveedores.push({
+                nombre: row[0] || '',
+                contacto: row[1] || '',
+                telefono: row[2] || '',
+                email: row[3] || ''
+            });
+        }
+    }
+    return proveedores;
 }
 
 async function fetchGoogleSheetData(range) {
@@ -765,56 +788,6 @@ async function fetchGoogleSheetData(range) {
         throw new Error(`HTTP error! status: ${response.status}`);
     }
     return await response.json();
-}
-
-function parseInventoryData(values) {
-    const inventory = [];
-    for (let i = 1; i < values.length; i++) {
-        const row = values[i];
-        if (row.length >= 6) {
-            inventory.push({
-                id: parseInt(row[0]) || i,
-                name: row[1] || '',
-                quantity: parseFloat(row[2]) || 0,
-                unit: row[3] || '',
-                minStock: parseFloat(row[4]) || 0,
-                supplier: row[5] || ''
-            });
-        }
-    }
-    return inventory;
-}
-
-function parseSalesData(values) {
-    if (values.length > 1) {
-        const row = values[1];
-        return {
-            today: parseFloat(row[1]) || 0,
-            yesterday: parseFloat(row[2]) || 0,
-            clients: parseInt(row[3]) || 0,
-            avgTicket: parseFloat(row[4]) || 0
-        };
-    }
-    return systemData.sales;
-}
-
-function parseStaffData(values) {
-    if (values.length > 1) {
-        const row = values[1];
-        const absent = [];
-        for (let i = 2; i < row.length; i++) {
-            if (row[i] && row[i].trim()) {
-                absent.push(row[i].trim());
-            }
-        }
-
-        return {
-            active: parseInt(row[0]) || 0,
-            total: parseInt(row[1]) || 0,
-            absent: absent
-        };
-    }
-    return systemData.staff;
 }
 
 // Main initialization function
@@ -943,62 +916,7 @@ function startAutoRefresh() {
 
 const ctx = document.getElementById('comboTimeChart').getContext('2d');
 
-// Valores de ejemplo (pon aquí los totales del día)
-const totalIngresosHoy = 12450;
-const totalEgresosHoy = 9800;
 
-const comboTimeChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: ['Ingresos', 'Egresos'],
-        datasets: [
-            {
-                label: 'Ingresos',
-                data: [totalIngresosHoy, 0],
-                backgroundColor: '#1abc9c',
-                borderRadius: 8,
-                barPercentage: 0.7,
-                categoryPercentage: 0.6
-            },
-            {
-                label: 'Egresos',
-                data: [0, totalEgresosHoy],
-                backgroundColor: '#e74c3c',
-                borderRadius: 8,
-                barPercentage: 0.7,
-                categoryPercentage: 0.6
-            }
-        ]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        scales: {
-            x: {
-                ticks: { color: '#fff' },
-                grid: { color: '#333' }
-            },
-            y: {
-                beginAtZero: true,
-                ticks: { color: '#fff' },
-                grid: { color: '#333' }
-            }
-        },
-        plugins: {
-            legend: {
-                labels: { color: '#fff' }
-            },
-            tooltip: {
-                callbacks: {
-                    label: (ctx) => {
-                        const v = ctx.parsed.y ?? ctx.parsed.x;
-                        return `${ctx.dataset.label}: ${v.toLocaleString()}`;
-                    }
-                }
-            }
-        }
-    }
-});
 
 const pieEmitidas = document.getElementById('pieChartEmitidas');
 const pieRecibidas = document.getElementById('pieChartRecibidas');
@@ -1082,27 +1000,42 @@ if (pieRecibidas) {
     });
 }
 
-const barCtx = document.getElementById('barChart').getContext('2d');
+let comboTimeChartInstance = null;
 
-const barChart = new Chart(barCtx, {
-    type: 'bar',
-    data: {
-        labels: ['Articulo 1', ' Articulo 2', 'Articulo 3', 'Articulo 4'],
-        datasets: [{
-            label: 'Cantidad vendida',
-            data: [120, 95, 85, 60],
-            backgroundColor: [
-                '#1abc9c',
-                '#3498db',
-                '#9b59b6',
-                '#e67e22'
-            ],
-            borderRadius: 8,
-            barThickness: 25
-        }]
-    },
-    options: {
-        indexAxis: 'y',
+function updateComboTimeChart() {
+    const totalIngresosHoy = systemData.ingresos
+        .filter(item => item.fecha === new Date().toISOString().split('T')[0])
+        .reduce((sum, item) => sum + item.monto, 0);
+
+    const totalEgresosHoy = systemData.egresos
+        .filter(item => item.fecha === new Date().toISOString().split('T')[0])
+        .reduce((sum, item) => sum + item.monto, 0);
+
+    const ctx = document.getElementById('comboTimeChart').getContext('2d');
+
+    const chartData = {
+        labels: ['Ingresos', 'Egresos'],
+        datasets: [
+            {
+                label: 'Ingresos',
+                data: [totalIngresosHoy, 0],
+                backgroundColor: '#1abc9c',
+                borderRadius: 8,
+                barPercentage: 0.7,
+                categoryPercentage: 0.6
+            },
+            {
+                label: 'Egresos',
+                data: [0, totalEgresosHoy],
+                backgroundColor: '#e74c3c',
+                borderRadius: 8,
+                barPercentage: 0.7,
+                categoryPercentage: 0.6
+            }
+        ]
+    };
+
+    const chartOptions = {
         responsive: true,
         maintainAspectRatio: true,
         scales: {
@@ -1111,34 +1044,42 @@ const barChart = new Chart(barCtx, {
                 grid: { color: '#333' }
             },
             y: {
+                beginAtZero: true,
                 ticks: { color: '#fff' },
                 grid: { color: '#333' }
             }
         },
         plugins: {
             legend: {
-                display: false
+                labels: { color: '#fff' }
             },
             tooltip: {
                 callbacks: {
-                    label: (context) => `${context.parsed.x} unidades`
-                }
-            },
-            title: {
-                display: true,
-                text: 'Productos más vendidos',
-                color: '#fff',
-                font: {
-                    size: 16,
-                    weight: 'bold'
+                    label: (ctx) => {
+                        const v = ctx.parsed.y ?? ctx.parsed.x;
+                        return `${ctx.dataset.label}: ${v.toLocaleString()}`;
+                    }
                 }
             }
         }
+    };
+
+    // Destruye el gráfico anterior si existe
+    if (comboTimeChartInstance) {
+        comboTimeChartInstance.destroy();
+        comboTimeChartInstance = null;
     }
-});
+
+    comboTimeChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: chartData,
+        options: chartOptions
+    });
+}
 
 // Initialize everything when DOM is loaded
 document.addEventListener('DOMContentLoaded', function () {
+    loadDataFromGoogleSheets();
     initializeSystem();
     initializeVoiceControls();
     startAutoRefresh();
