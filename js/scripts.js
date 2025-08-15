@@ -161,7 +161,6 @@ function initializeDashboard() {
     initializeFormListeners();
 }
 
-// Card Toggle Functionality
 function toggleCard(cardName) {
     // Helper para abrir/cerrar una card
     function toggleSingleCard(name, forceOpen = false) {
